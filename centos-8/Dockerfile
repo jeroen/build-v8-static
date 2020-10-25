@@ -1,6 +1,8 @@
 FROM centos:8
 
-ENV version 8.3.110.13
+ARG v8_version=8.3.110.13
+ENV version=$v8_version
+
 ENV target x86.static
 ENV GYP_GENERATORS ninja
 ENV PATH="/depot_tools:${PATH}"

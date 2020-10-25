@@ -8,12 +8,13 @@ name: Building V8
 jobs:
   build:
     runs-on: ubuntu-latest
-    name: Build for ${{ matrix.distro }}
+    name: Build v8-${{ matrix.version }} on ${{ matrix.distro }}
 
     strategy:
       fail-fast: false
       matrix:
         distro: [ centos-8 ]
+        version: [ '8.3.110.13', '8.6.395.17' ]
 
     steps:
       - name: checkout
@@ -21,16 +22,16 @@ jobs:
 
       - name: build
         run: |
-          docker build ${{ matrix.distro }} -t mybuild
+          docker build --build-arg v8_version=${{ matrix.version }} ${{ matrix.distro }} -t mybuild
 
       - name: copy
         run: |
           docker run -d --name myrun mybuild
-          docker cp myrun:/v8-8.3.110.13-static.tar.xz .
+          docker cp myrun:/v8-${{ matrix.version }}-static.tar.xz .
           docker stop myrun
 
       - name: store
         uses: actions/upload-artifact@v2
         with:
           name: ${{ matrix.distro }}-binaries
-          path: v8-8.3.110.13-static.tar.xz
+          path: v8-${{ matrix.version }}-static.tar.xz
