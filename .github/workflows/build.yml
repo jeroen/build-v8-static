@@ -8,12 +8,12 @@ name: Building V8
 jobs:
   build:
     runs-on: ubuntu-latest
-    name: Build v8-${{ matrix.version }} on ${{ matrix.distro }}
+    name: ${{ matrix.distro }} / v8-${{ matrix.version }}
 
     strategy:
       fail-fast: false
       matrix:
-        distro: [ centos-8 ]
+        distro: [ 'centos-8', 'debian-10' ]
         version: [ '8.3.110.13', '8.6.395.17' ]
 
     steps:
@@ -33,5 +33,5 @@ jobs:
       - name: store
         uses: actions/upload-artifact@v2
         with:
-          name: ${{ matrix.distro }}-binaries
+          name: v8-${{ matrix.version }}-${{ matrix.distro }}
           path: v8-${{ matrix.version }}-static.tar.xz
