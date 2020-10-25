@@ -1,0 +1,36 @@
+on:
+  push:
+    branches:
+      - master
+
+name: Building V8
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    name: Build for ${{ matrix.distro }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        distro: [ centos-8 ]
+
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+
+      - name: build
+        run: |
+          docker build ${{ matrix.distro }} -t mybuild
+
+      - name: copy
+        run: |
+          docker run -d --name myrun mybuild
+          docker cp myrun:/v8-8.3.110.13-static.tar.xz .
+          docker stop myrun
+
+      - name: store
+        uses: actions/upload-artifact@v2
+        with:
+          name: ${{ matrix.distro }}-binaries
+          path: v8-8.3.110.13-static.tar.xz
