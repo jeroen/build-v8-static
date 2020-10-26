@@ -10,6 +10,9 @@ ENV GYP_GENERATORS ninja
 ENV PATH="/depot_tools:${PATH}"
 ENV pkgdir /package
 
+ENV CC gcc-4.9
+ENV CXX g++-4.9
+
 RUN apt-get update -y && \
 	apt-get upgrade -y && \
 	apt-get install -y curl python git g++-4.9 && \
