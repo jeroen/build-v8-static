@@ -10,13 +10,12 @@ ENV GYP_GENERATORS ninja
 ENV PATH="/depot_tools:${PATH}"
 ENV pkgdir /package
 
-ENV CC gcc-4.9
-ENV CXX g++-4.9
-
 RUN apt-get update -y && \
 	apt-get upgrade -y && \
 	apt-get install -y curl python git g++-4.9 && \
-	apt-get install -y pkg-config libglib2.0-dev --no-install-recommends
+	apt-get install -y pkg-config libglib2.0-dev --no-install-recommends && \
+	ln -s /usr/bin/gcc-4.9 /usr/bin/gcc && \
+	ln -s /usr/bin/g++-4.9 /usr/bin/g++
 
 RUN git clone https://chromium.googlesource.com/chromium/tools/depot_tools
 
