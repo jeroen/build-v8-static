@@ -2,7 +2,7 @@
 
 FROM ubuntu:xenial
 
-ARG v8_version=8.3.110.13
+ARG v8_version=6.8.275.32
 ENV version=$v8_version
 
 ENV target x86.static
@@ -47,8 +47,6 @@ RUN	install -d ${pkgdir}v8 && \
 	install -Dm755 ${target}/obj/libv8_monolith.a ${pkgdir}/v8/lib/libv8_monolith.a && \
 	install -d ${pkgdir}/v8/include && \
 	install -Dm644 include/*.h ${pkgdir}/v8/include && \
-	install -d ${pkgdir}/v8/include/cppgc && \
-	install -Dm644 include/cppgc/*.h ${pkgdir}/v8/include/cppgc && \
 	install -d ${pkgdir}/v8/include/libplatform && \
 	install -Dm644 include/libplatform/*.h ${pkgdir}/v8/include/libplatform && \
 	install -d ${pkgdir}/v8/lic/ && \
