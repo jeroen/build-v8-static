@@ -1,14 +1,10 @@
 # Adapted from: https://github.com/humanmade/alpine-v8
-FROM alpine:3.11 as gn-builder
-
 ARG v8_version=8.3.110.13
-ENV version=$v8_version
-ENV pkgdir /package
-
 ARG GN_COMMIT=82d673acb802cee21534c796a59f8cdf26500f53
 
 # STEP 1
 # Build GN for alpine
+FROM alpine:3.11 as gn-builder
 RUN \
   apk add --update --virtual .gn-build-dependencies alpine-sdk binutils-gold clang curl git llvm9 ninja python tar xz && \
   PATH=$PATH:/usr/lib/llvm9/bin  && \
@@ -37,7 +33,7 @@ RUN \
   cd /tmp && \
   fetch v8 && \
   cd /tmp/v8 && \
-  git checkout ${version} && \
+  git checkout ${v8_version} && \
   gclient sync && \
   apt-get remove --purge -y git curl python && \
   apt-get autoremove -y && \
@@ -80,6 +76,8 @@ RUN \
 
 # STEP 4
 # Create package archive
+ARG v8_version
+ENV pkgdir /package
 RUN cd /tmp/v8 && \
   install -d ${pkgdir}v8 && \
   install -d ${pkgdir}/v8/lib && \
@@ -92,4 +90,4 @@ RUN cd /tmp/v8 && \
   install -Dm644 include/libplatform/*.h ${pkgdir}/v8/include/libplatform && \
   install -d ${pkgdir}/v8/lic/ && \
   install -m644 LICENSE* ${pkgdir}/v8/lic/ && \
-  tar cfJ /v8-${version}-static.tar.xz -C ${pkgdir} v8
+  tar cfJ /v8-${v8_version}-static.tar.xz -C ${pkgdir} v8
