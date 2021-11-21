@@ -1,7 +1,5 @@
 on:
   push:
-    branches:
-      - master
 
 name: Building V8
 
@@ -14,7 +12,7 @@ jobs:
       fail-fast: false
       matrix:
         distro: [ 'centos-8', 'debian-10', 'alpine', 'debian-10-arm' ]
-        version: [ '8.3.110.13', '8.6.395.17' ]
+        version: [ '8.3.110.13', '9.6.180.12' ]
         include:
           - distro: 'gcc-4.9'
             version: '6.8.275.32'

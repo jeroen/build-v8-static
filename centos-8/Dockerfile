@@ -10,8 +10,8 @@ ENV pkgdir /package
 
 RUN yum update -y && \
 	yum upgrade -y && \
-	yum install -y python2 git gcc-c++ bzip2 libatomic glib2-devel && \
-	ln -s /usr/bin/python2 /usr/bin/python
+	yum install -y python3 git gcc-c++ bzip2 libatomic glib2-devel && \
+	ln -s /usr/bin/python3 /usr/bin/python
 
 RUN git clone https://chromium.googlesource.com/chromium/tools/depot_tools
 

@@ -12,7 +12,7 @@ ENV pkgdir /package
 
 RUN apt-get update -y && \
 	apt-get upgrade -y && \
-	apt-get install -y curl python git g++-4.9 && \
+	apt-get install -y curl python3 git g++-4.9 && \
 	apt-get install -y pkg-config libglib2.0-dev --no-install-recommends && \
 	ln -s /usr/bin/gcc-4.9 /usr/bin/gcc && \
 	ln -s /usr/bin/g++-4.9 /usr/bin/g++
