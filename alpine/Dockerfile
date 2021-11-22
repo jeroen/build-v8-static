@@ -5,6 +5,7 @@ ARG GN_COMMIT=0153d369bbccc908f4da4993b1ba82728055926a
 # STEP 1
 # Build GN for alpine
 FROM alpine:3.12 as gn-builder
+ARG GN_COMMIT
 RUN \
   apk add --update --virtual .gn-build-dependencies alpine-sdk binutils-gold clang curl git llvm9 ninja python3 tar xz && \
   PATH=$PATH:/usr/lib/llvm9/bin  && \
@@ -23,7 +24,7 @@ RUN \
 # Use depot_tools to fetch the V8 source and dependencies
 # This requires glibc so we use debian tools
 FROM debian:10 as source
-
+ARG v8_version
 RUN \
   set -x && \
   apt-get update && \
@@ -33,8 +34,8 @@ RUN \
   cd /tmp && \
   fetch v8 && \
   cd /tmp/v8 && \
-  git checkout ${v8_version} && \
-  gclient sync && \
+  gclient sync -D --force --reset && \
+  gclient sync --revision ${v8_version} && \
   apt-get remove --purge -y git curl python3 && \
   apt-get autoremove -y && \
   rm -rf /var/lib/apt/lists/*
@@ -55,9 +56,10 @@ RUN \
     target_cpu=\"x64\" \
     v8_target_cpu=\"x64\" \
     v8_enable_future=true \
-    is_official_build=true \
+    is_official_build=false \
     is_cfi=false \
     is_clang=false \
+    is_debug=false \
     use_custom_libcxx=false \
     use_sysroot=false \
     use_gold=false \
