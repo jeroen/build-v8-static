@@ -72,7 +72,7 @@ RUN \
     v8_static_library=true \
     v8_experimental_extra_library_files=[] \
     v8_extra_library_files=[] && \
-  ninja -C out.gn/x64.release -j $(getconf _NPROCESSORS_ONLN) && \
+  ninja -C out.gn/x64.release -j $(getconf _NPROCESSORS_ONLN) "v8_monolith" "d8" && \
   find /tmp/v8/out.gn/x64.release -name '*.a'
 
 # STEP 4

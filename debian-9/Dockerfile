@@ -35,7 +35,7 @@ RUN gn gen ${target} -vv --fail-on-unused-args \
             use_custom_libcxx=false \
             use_sysroot=false'
 
-RUN ninja -C ${target}
+RUN ninja -C ${target} "v8_monolith" "d8"
 
 RUN	install -d ${pkgdir}v8 && \
 	install -d ${pkgdir}/v8/lib && \

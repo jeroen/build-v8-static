@@ -40,7 +40,8 @@ RUN gn gen ${target} -vv --fail-on-unused-args \
             use_sysroot=false \
             target_cpu="arm64" v8_target_cpu="arm64"'
 
-RUN ninja -C ${target}
+# NB: do not build tests on ARM
+RUN ninja -C ${target} "v8_monolith" "d8"
 
 RUN	install -d ${pkgdir}v8 && \
 	install -d ${pkgdir}/v8/lib && \
