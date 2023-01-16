@@ -1,4 +1,4 @@
-FROM rbernon/llvm-libcxx-x86_64-linux-gnu:14.0.0
+FROM tuxmake/x86_64_clang-14
 
 ARG v8_version=8.3.110.13
 ENV version=$v8_version
@@ -27,7 +27,7 @@ RUN export CXX="clang++ -stdlib=libc++" && \
     --args='v8_monolithic=true \
             v8_static_library=true \
             is_clang=true \
-            clang_base_path="/usr" \
+            clang_base_path="/usr/local" \
             clang_use_chrome_plugins=false \
             is_asan=false \
             use_gold=false \
