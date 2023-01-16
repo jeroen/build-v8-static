@@ -1,4 +1,4 @@
-FROM debian:10
+FROM silkeh/clang:14-bullseye
 
 ARG v8_version=8.3.110.13
 ENV version=$v8_version
@@ -10,7 +10,7 @@ ENV pkgdir /package
 
 RUN apt-get update -y && \
 	apt-get upgrade -y && \
-	apt-get install -y curl python2 git g++ pkg-config libglib2.0-dev && \
+	apt-get install -y curl python2 git pkg-config libglib2.0-dev && \
 	ln -sf /usr/bin/python2 /usr/bin/python
 
 RUN git clone https://chromium.googlesource.com/chromium/tools/depot_tools
@@ -27,6 +27,8 @@ RUN export CXX="clang++ -stdlib=libc++" && \
     --args='v8_monolithic=true \
             v8_static_library=true \
             is_clang=true \
+            use_sysroot=false \
+            clang_base_path="/usr/local" \
             is_asan=false \
             use_gold=false \
             is_debug=false \
@@ -34,7 +36,7 @@ RUN export CXX="clang++ -stdlib=libc++" && \
             treat_warnings_as_errors=false \
             v8_enable_i18n_support=false \
             v8_use_external_startup_data=false \
-            use_custom_libcxx=true \
+            use_custom_libcxx=false \
             use_sysroot=false'
 
 RUN ninja -C ${target} "v8_monolith" "d8"
