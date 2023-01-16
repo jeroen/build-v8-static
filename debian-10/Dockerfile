@@ -1,4 +1,4 @@
-FROM debian:10
+FROM debian:11
 
 ARG v8_version=8.3.110.13
 ENV version=$v8_version
@@ -7,8 +7,6 @@ ENV target x86.static
 ENV GYP_GENERATORS ninja
 ENV PATH="/depot_tools:${PATH}"
 ENV pkgdir /package
-ENV CXX="clang++ -stdlib=libc++"
-ENV CC="clang -stdlib=libc++"
 
 RUN apt-get update -y && \
 	apt-get upgrade -y && \
@@ -24,10 +22,13 @@ WORKDIR /v8
 RUN gclient sync -D --force --reset && \
 	gclient sync --revision ${version}
 
-RUN gn gen ${target} -vv --fail-on-unused-args \
+RUN export CXX="clang++ -stdlib=libc++" && \
+	gn gen ${target} -vv --fail-on-unused-args \
     --args='v8_monolithic=true \
             v8_static_library=true \
             is_clang=true \
+            clang_base_path="/usr" \
+            use_sysroot=false \
             is_asan=false \
             use_gold=false \
             is_debug=false \
