@@ -1,4 +1,4 @@
-FROM silkeh/clang:14-bullseye
+FROM silkeh/clang:latest
 
 ARG v8_version=8.3.110.13
 ENV version=$v8_version
