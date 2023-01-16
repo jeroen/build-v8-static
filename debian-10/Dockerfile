@@ -7,10 +7,12 @@ ENV target x86.static
 ENV GYP_GENERATORS ninja
 ENV PATH="/depot_tools:${PATH}"
 ENV pkgdir /package
+ENV CXX="clang++ -stdlib=libc++"
+ENV CC="clang -stdlib=libc++"
 
 RUN apt-get update -y && \
 	apt-get upgrade -y && \
-	apt-get install -y curl python2 git pkg-config libglib2.0-dev && \
+	apt-get install -y curl python2 git clang pkg-config libglib2.0-dev && \
 	ln -sf /usr/bin/python2 /usr/bin/python
 
 RUN git clone https://chromium.googlesource.com/chromium/tools/depot_tools
@@ -33,7 +35,7 @@ RUN gn gen ${target} -vv --fail-on-unused-args \
             treat_warnings_as_errors=false \
             v8_enable_i18n_support=false \
             v8_use_external_startup_data=false \
-            use_custom_libcxx=true \
+            use_custom_libcxx=false \
             use_sysroot=false'
 
 RUN ninja -C ${target} "v8_monolith" "d8"
