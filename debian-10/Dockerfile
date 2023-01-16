@@ -28,6 +28,7 @@ RUN export CXX="clang++ -stdlib=libc++" && \
             v8_static_library=true \
             is_clang=true \
             clang_base_path="/usr/local" \
+            clang_use_chrome_plugins=false \
             is_asan=false \
             use_gold=false \
             is_debug=false \
