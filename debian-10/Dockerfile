@@ -10,8 +10,8 @@ ENV pkgdir /package
 
 RUN apt-get update -y && \
 	apt-get upgrade -y && \
-	apt-get install -y curl python2 git g++ pkg-config libglib2.0-dev && \
-	ln -s /usr/bin/python2 /usr/bin/python
+	apt-get install -y curl python2 git clang pkg-config libglib2.0-dev && \
+	ln -sf /usr/bin/python2 /usr/bin/python
 
 RUN git clone https://chromium.googlesource.com/chromium/tools/depot_tools
 
@@ -22,10 +22,13 @@ WORKDIR /v8
 RUN gclient sync -D --force --reset && \
 	gclient sync --revision ${version}
 
+RUN find . \( -type d -name .git -prune \) -o -type f -print0 | xargs -0 sed -i 's/-ffile-compilation-dir/-DBLABLABLA/g'
+
 RUN gn gen ${target} -vv --fail-on-unused-args \
     --args='v8_monolithic=true \
             v8_static_library=true \
-            is_clang=false \
+            is_clang=true \
+            clang_base_path="/usr/" \
             is_asan=false \
             use_gold=false \
             is_debug=false \

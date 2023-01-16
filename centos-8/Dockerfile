@@ -1,4 +1,4 @@
-FROM centos:8
+FROM rockylinux/rockylinux:8
 
 ARG v8_version=8.3.110.13
 ENV version=$v8_version
@@ -10,7 +10,7 @@ ENV pkgdir /package
 
 RUN yum update -y && \
 	yum upgrade -y && \
-	yum install -y python3 git gcc-c++ bzip2 libatomic glib2-devel && \
+	yum install -y python3 git clang bzip2 libatomic glib2-devel && \
 	ln -s /usr/bin/python3 /usr/bin/python
 
 RUN git clone https://chromium.googlesource.com/chromium/tools/depot_tools
@@ -25,7 +25,8 @@ RUN gclient sync -D --force --reset && \
 RUN gn gen ${target} -vv --fail-on-unused-args \
     --args='v8_monolithic=true \
             v8_static_library=true \
-            is_clang=false \
+            is_clang=true \
+            clang_base_path="/usr/" \
             is_asan=false \
             use_gold=false \
             is_debug=false \
