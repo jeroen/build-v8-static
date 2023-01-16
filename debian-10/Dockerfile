@@ -22,7 +22,7 @@ WORKDIR /v8
 RUN gclient sync -D --force --reset && \
 	gclient sync --revision ${version}
 
-RUN export CXX="clang++ -stdlib=libc++" && \
+RUN export CXXFLAGS="-stdlib=libc++" && \
 	gn gen ${target} -vv --fail-on-unused-args \
     --args='v8_monolithic=true \
             v8_static_library=true \
@@ -39,7 +39,8 @@ RUN export CXX="clang++ -stdlib=libc++" && \
             use_custom_libcxx=false \
             use_sysroot=false'
 
-RUN ninja -C ${target} "v8_monolith" "d8"
+RUN export CXXFLAGS="-stdlib=libc++" && \
+	ninja -C ${target} "v8_monolith" "d8"
 
 RUN	install -d ${pkgdir}v8 && \
 	install -d ${pkgdir}/v8/lib && \
