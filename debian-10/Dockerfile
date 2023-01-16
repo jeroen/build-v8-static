@@ -27,7 +27,6 @@ RUN export CXX="clang++ -stdlib=libc++" && \
     --args='v8_monolithic=true \
             v8_static_library=true \
             is_clang=true \
-            use_sysroot=false \
             clang_base_path="/usr/local" \
             is_asan=false \
             use_gold=false \
