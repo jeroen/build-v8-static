@@ -30,6 +30,7 @@ RUN gclient sync -D --force --reset && \
 RUN gn gen ${target} -vv --fail-on-unused-args \
     --args='v8_monolithic=true \
             v8_static_library=true \
+            v8_enable_sandbox=false \
             is_clang=true \
             clang_base_path="/usr" \
             clang_use_chrome_plugins=false \
