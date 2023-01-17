@@ -23,7 +23,7 @@ jobs:
 
     steps:
       - name: checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: build
         run: |
@@ -37,7 +37,7 @@ jobs:
           mv v8-${{ matrix.version }}-static.tar.xz v8-${{ matrix.version }}-${{ matrix.distro }}.tar.xz
 
       - name: store
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: v8-${{ matrix.version }}-${{ matrix.distro }}
           path: v8-${{ matrix.version }}-${{ matrix.distro }}.tar.xz
