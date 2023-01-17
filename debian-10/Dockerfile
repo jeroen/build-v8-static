@@ -30,6 +30,7 @@ RUN gn gen ${target} -vv --fail-on-unused-args \
             is_debug=false \
             is_official_build=false \
             treat_warnings_as_errors=false \
+            clang_use_chrome_plugins=false \
             v8_enable_i18n_support=false \
             v8_use_external_startup_data=false \
             use_custom_libcxx=false \
