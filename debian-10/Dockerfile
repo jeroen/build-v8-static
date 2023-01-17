@@ -1,4 +1,9 @@
-FROM tuxmake/x86_64_clang-14
+FROM debian:bookworm
+
+RUN rm -f /usr/bin/clang++ && \
+	echo '#!/bin/sh' >> /usr/bin/clang++ && \
+	echo '/usr/lib/llvm-14/bin/clang++ -stdlib=libc++ "$@"' >> /usr/bin/clang++ && \
+	chmod +x /usr/bin/clang++
 
 ARG v8_version=8.3.110.13
 ENV version=$v8_version
@@ -10,8 +15,7 @@ ENV pkgdir /package
 
 RUN apt-get update -y && \
 	apt-get upgrade -y && \
-	apt-get install -y curl python2 git pkg-config libglib2.0-dev && \
-	ln -sf /usr/bin/python2 /usr/bin/python
+	apt-get install -y curl python3 git pkg-config libglib2.0-dev clang xz-utils libc++-dev libc++abi-dev
 
 RUN git clone https://chromium.googlesource.com/chromium/tools/depot_tools
 
@@ -22,12 +26,11 @@ WORKDIR /v8
 RUN gclient sync -D --force --reset && \
 	gclient sync --revision ${version}
 
-RUN export CXXFLAGS="-stdlib=libc++" && \
-	gn gen ${target} -vv --fail-on-unused-args \
+RUN gn gen ${target} -vv --fail-on-unused-args \
     --args='v8_monolithic=true \
             v8_static_library=true \
             is_clang=true \
-            clang_base_path="/usr/local" \
+            clang_base_path="/usr" \
             clang_use_chrome_plugins=false \
             is_asan=false \
             use_gold=false \
@@ -39,8 +42,7 @@ RUN export CXXFLAGS="-stdlib=libc++" && \
             use_custom_libcxx=false \
             use_sysroot=false'
 
-RUN export CXXFLAGS="-stdlib=libc++" && \
-	ninja -C ${target} "v8_monolith" "d8"
+RUN ninja -C ${target} "v8_monolith" "d8"
 
 RUN	install -d ${pkgdir}v8 && \
 	install -d ${pkgdir}/v8/lib && \
