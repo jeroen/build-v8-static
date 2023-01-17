@@ -1,11 +1,5 @@
 FROM debian:bookworm
 
-RUN rm -f /usr/bin/clang++ && \
-	echo '#!/bin/sh' >> /usr/bin/clang++ && \
-	echo 'ARGS=$(echo "$@" | sed "s/-Wno-unqualified-std-cast-call//g")' >> /usr/bin/clang++ && \
-	echo '/usr/lib/llvm-14/bin/clang++ -stdlib=libc++ "$ARGS"' >> /usr/bin/clang++ && \
-	chmod +x /usr/bin/clang++
-
 ARG v8_version=8.3.110.13
 ENV version=$v8_version
 
@@ -17,6 +11,12 @@ ENV pkgdir /package
 RUN apt-get update -y && \
 	apt-get upgrade -y && \
 	apt-get install -y curl python3 git pkg-config libglib2.0-dev clang xz-utils libc++-dev libc++abi-dev llvm lld
+
+RUN rm -f /usr/bin/clang++ && \
+	echo '#!/bin/sh' >> /usr/bin/clang++ && \
+	echo 'ARGS=$(echo "$@" | sed "s/-Wno-unqualified-std-cast-call//g")' >> /usr/bin/clang++ && \
+	echo '/usr/lib/llvm-14/bin/clang++ -stdlib=libc++ "$ARGS"' >> /usr/bin/clang++ && \
+	chmod +x /usr/bin/clang++
 
 RUN git clone https://chromium.googlesource.com/chromium/tools/depot_tools
 
