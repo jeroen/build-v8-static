@@ -15,7 +15,7 @@ ENV pkgdir /package
 
 RUN apt-get update -y && \
 	apt-get upgrade -y && \
-	apt-get install -y curl python3 git pkg-config libglib2.0-dev clang xz-utils libc++-dev libc++abi-dev
+	apt-get install -y curl python3 git pkg-config libglib2.0-dev clang xz-utils libc++-dev libc++abi-dev llvm
 
 RUN git clone https://chromium.googlesource.com/chromium/tools/depot_tools
 
