@@ -11,8 +11,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        distro: [ 'centos-8', 'debian-10', 'debian-11-arm' ]
-        version: [ '9.6.180.12', '10.2.154.23' ]
+        distro: [ 'centos-8', 'debian-10', 'debian-11-arm', 'debian-12-libcxx' ]
+        version: [ '10.2.154.23', '10.8.168.25' ]
         include:
           - distro: 'gcc-4.9'
             version: '6.8.275.32'
