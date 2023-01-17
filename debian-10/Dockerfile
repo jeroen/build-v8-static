@@ -1,8 +1,8 @@
-FROM debian:11
+FROM debian:bookworm
 
 RUN rm -f /usr/bin/clang++ && \
 	echo '#!/bin/sh' >> /usr/bin/clang++ && \
-	echo '/usr/lib/llvm-11/bin/clang++ -stdlib=libc++ "$@"' >> /usr/bin/clang++ && \
+	echo '/usr/lib/llvm-14/bin/clang++ -stdlib=libc++ "$@"' >> /usr/bin/clang++ && \
 	chmod +x /usr/bin/clang++
 
 ARG v8_version=8.3.110.13
