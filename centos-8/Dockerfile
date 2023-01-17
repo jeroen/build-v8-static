@@ -1,4 +1,4 @@
-FROM centos:8
+FROM rockylinux/rockylinux:8
 
 ARG v8_version=8.3.110.13
 ENV version=$v8_version
@@ -10,7 +10,7 @@ ENV pkgdir /package
 
 RUN yum update -y && \
 	yum upgrade -y && \
-	yum install -y python3 git gcc-c++ bzip2 libatomic glib2-devel && \
+	yum install -y python3 xz git gcc-c++ bzip2 libatomic glib2-devel && \
 	ln -s /usr/bin/python3 /usr/bin/python
 
 RUN git clone https://chromium.googlesource.com/chromium/tools/depot_tools

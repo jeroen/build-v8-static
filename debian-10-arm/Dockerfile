@@ -10,8 +10,7 @@ ENV pkgdir /package
 
 RUN apt-get update -y && \
 	apt-get upgrade -y && \
-	apt-get install -y curl python2 git g++ g++-aarch64-linux-gnu pkg-config libglib2.0-dev && \
-	ln -s /usr/bin/python2 /usr/bin/python
+	apt-get install -y curl python3 xz-utils git g++ g++-aarch64-linux-gnu pkg-config libglib2.0-dev
 
 RUN git clone https://chromium.googlesource.com/chromium/tools/depot_tools
 
