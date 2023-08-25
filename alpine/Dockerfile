@@ -1,13 +1,13 @@
 # Adapted from: https://github.com/humanmade/alpine-v8
-ARG v8_version=9.6.180.12
-ARG GN_COMMIT=0153d369bbccc908f4da4993b1ba82728055926a
+ARG v8_version=10.8.168.25
+ARG GN_COMMIT=cc28efe62ef0c2fb32455f414a29c4a55bb7fbc4
 
 # STEP 1
 # Build GN for alpine
-FROM alpine:3.12 as gn-builder
+FROM alpine:3.16 as gn-builder
 ARG GN_COMMIT
 RUN \
-  apk add --update --virtual .gn-build-dependencies alpine-sdk binutils-gold clang curl git llvm9 ninja python3 tar xz && \
+  apk add --update --virtual .gn-build-dependencies alpine-sdk binutils-gold clang curl git llvm13 ninja python3 tar xz && \
   PATH=$PATH:/usr/lib/llvm9/bin  && \
   cp -f /usr/bin/ld.gold /usr/bin/ld  && \
   git clone https://gn.googlesource.com/gn /tmp/gn && \
@@ -43,7 +43,7 @@ RUN \
 
 # STEP 3
 # Build V8 for alpine
-FROM alpine:3.12 as v8
+FROM alpine:3.16 as v8
 COPY --from=source /tmp/v8 /tmp/v8
 COPY --from=gn-builder /usr/local/bin/gn /tmp/v8/buildtools/linux64/gn
 RUN \
