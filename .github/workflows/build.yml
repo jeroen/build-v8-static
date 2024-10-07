@@ -11,15 +11,12 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        distro: [ 'centos-8', 'debian-10', 'debian-11-arm', 'debian-12-libcxx', 'alpine' ]
+        distro: [ 'centos-8', 'debian-11', 'debian-11-arm', 'debian-12-libcxx', 'alpine' ]
         version: [ '10.8.168.25' ]
-        include:
-          - distro: 'gcc-4.8'
-            version: '6.8.275.32'
 
     steps:
       - name: checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: build
         run: |
@@ -33,7 +30,7 @@ jobs:
           mv v8-${{ matrix.version }}-static.tar.xz v8-${{ matrix.version }}-${{ matrix.distro }}.tar.xz
 
       - name: store
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: v8-${{ matrix.version }}-${{ matrix.distro }}
           path: v8-${{ matrix.version }}-${{ matrix.distro }}.tar.xz
@@ -45,7 +42,7 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/')
     steps:
       - name: Download artifacts for deployment
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4
         with:
           path: artifacts
       - name: Release artifacts
