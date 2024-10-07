@@ -8,15 +8,14 @@ ENV GYP_GENERATORS ninja
 ENV PATH="/depot_tools:${PATH}"
 ENV pkgdir /package
 
+COPY clang-wrapper.sh /clang-wrapper.sh
+
 RUN apt-get update -y && \
 	apt-get upgrade -y && \
-	apt-get install -y curl python3 git pkg-config libglib2.0-dev clang xz-utils libc++-dev libc++abi-dev llvm lld
+	apt-get install -y curl python3 git pkg-config libglib2.0-dev clang-16 xz-utils libc++-dev libc++abi-dev llvm lld
 
 RUN rm -f /usr/bin/clang++ && \
-	echo '#!/bin/sh' >> /usr/bin/clang++ && \
-	echo 'ARGS=$(echo "$@" | sed "s/-Wno-unqualified-std-cast-call//g")' >> /usr/bin/clang++ && \
-	echo '/usr/lib/llvm-14/bin/clang++ -stdlib=libc++ $ARGS' >> /usr/bin/clang++ && \
-	chmod +x /usr/bin/clang++
+	cp -f /clang-wrapper.sh /usr/bin/clang++
 
 RUN git clone https://chromium.googlesource.com/chromium/tools/depot_tools
 
