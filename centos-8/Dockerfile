@@ -5,12 +5,12 @@ ENV version=$v8_version
 
 ENV target x86.static
 ENV GYP_GENERATORS ninja
-ENV PATH="/depot_tools:${PATH}"
+ENV PATH="/depot_tools:/opt/rh/gcc-toolset-10/root/bin:${PATH}"
 ENV pkgdir /package
 
-RUN yum update -y && \
-	yum upgrade -y && \
-	yum install -y python38 xz git gcc-c++ bzip2 libatomic glib2-devel && \
+RUN dnf update -y && \
+	dnf upgrade -y && \
+	dnf install -y python38 bzip2 xz git glib2-devel gcc-toolset-10-{gcc-c++,libatomic-devel} && \
 	ln -s /usr/bin/python3 /usr/bin/python
 
 RUN git clone https://chromium.googlesource.com/chromium/tools/depot_tools
