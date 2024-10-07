@@ -8,11 +8,13 @@ jobs:
     runs-on: ubuntu-latest
     name: ${{ matrix.distro }} / v8-${{ matrix.version }}
 
+# V8 version from node-20: https://github.com/nodejs/node/blob/v20.x-staging-backport/deps/v8/include/v8-version.h
+
     strategy:
       fail-fast: false
       matrix:
         distro: [ 'centos-8', 'debian-11', 'debian-11-arm', 'debian-12-libcxx', 'alpine' ]
-        version: [ '10.8.168.25' ]
+        version: [ '11.3.244.8' ]
 
     steps:
       - name: checkout
