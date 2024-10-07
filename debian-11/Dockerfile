@@ -1,4 +1,4 @@
-FROM debian:10
+FROM debian:11
 
 ARG v8_version=8.3.110.13
 ENV version=$v8_version

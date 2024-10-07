@@ -43,12 +43,11 @@ RUN \
 
 # STEP 3
 # Build V8 for alpine
-FROM alpine:3.16 as v8
+FROM alpine:3.19 as v8
 COPY --from=source /tmp/v8 /tmp/v8
 COPY --from=gn-builder /usr/local/bin/gn /tmp/v8/buildtools/linux64/gn
 RUN \
   apk add --update --virtual .v8-build-dependencies curl g++ gcc glib-dev icu-dev libstdc++ linux-headers make ninja python3 tar xz && \
-  ln -s /usr/bin/python3 /usr/bin/python && \
   cd /tmp/v8 && \
   ./tools/dev/v8gen.py x64.release -- \
     binutils_path=\"/usr/bin\" \

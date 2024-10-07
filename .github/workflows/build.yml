@@ -11,7 +11,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        distro: [ 'centos-8', 'debian-10', 'debian-11-arm', 'debian-12-libcxx', 'alpine' ]
+        distro: [ 'centos-8', 'debian-11', 'debian-11-arm', 'debian-12-libcxx', 'alpine' ]
         version: [ '12.4.254.21' ]
 
     steps:
