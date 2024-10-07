@@ -5,12 +5,12 @@ ENV version=$v8_version
 
 ENV target x86.static
 ENV GYP_GENERATORS ninja
-ENV PATH="/depot_tools:/opt/rh/gcc-toolset-10/root/bin:${PATH}"
+ENV PATH="/depot_tools:${PATH}"
 ENV pkgdir /package
 
-RUN dnf update -y && \
-	dnf upgrade -y && \
-	dnf install -y python38 bzip2 xz git glib2-devel gcc-toolset-10-{gcc-c++,libatomic-devel} && \
+RUN yum update -y && \
+	yum upgrade -y && \
+	yum install -y python38 xz git gcc-c++ bzip2 libatomic glib2-devel && \
 	ln -s /usr/bin/python3 /usr/bin/python
 
 RUN git clone https://chromium.googlesource.com/chromium/tools/depot_tools
@@ -21,6 +21,9 @@ WORKDIR /v8
 
 RUN gclient sync -D --force --reset && \
 	gclient sync --revision ${version}
+
+# Workaround for GCC-8 bug
+RUN sed -i.bak 's|tuple()|tuple{}|g' src/compiler/turboshaft/operations.h
 
 RUN gn gen ${target} -vv --fail-on-unused-args \
     --args='v8_monolithic=true \
