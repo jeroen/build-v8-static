@@ -7,13 +7,17 @@ ENV target x86.static
 ENV GYP_GENERATORS ninja
 ENV PATH="/depot_tools:${PATH}"
 ENV pkgdir /package
+ENV CC="gcc"
+ENV CXX="g++"
+ENV AR="ar"
+ENV NM="nm"
 
 RUN yum update -y && \
 	yum upgrade -y && \
 	yum install -y python38 xz git gcc-c++ bzip2 libatomic glib2-devel && \
 	ln -s /usr/bin/python3 /usr/bin/python
 
-RUN git clone https://chromium.googlesource.com/chromium/tools/depot_tools
+RUN git clone https://chromium.googlesource.com/chromium/tools/depot_tools 
 
 RUN yes | fetch v8
 
@@ -21,9 +25,6 @@ WORKDIR /v8
 
 RUN gclient sync -D --force --reset && \
 	gclient sync --revision ${version}
-
-# Workaround for GCC-8 bug
-RUN sed -i.bak 's|tuple()|tuple{}|g' src/compiler/turboshaft/operations.h
 
 RUN gn gen ${target} -vv --fail-on-unused-args \
     --args='v8_monolithic=true \
@@ -38,7 +39,13 @@ RUN gn gen ${target} -vv --fail-on-unused-args \
             v8_enable_i18n_support=false \
             v8_use_external_startup_data=false \
             use_custom_libcxx=false \
+            custom_toolchain="//build/toolchain/linux/unbundle:default" \
+            host_toolchain="//build/toolchain/linux/unbundle:default" \
             use_sysroot=false'
+
+# Workaround for GCC-8 bugs
+RUN sed -i.bak 's|tuple()|tuple{}|g' src/compiler/turboshaft/operations.h &&\
+	sed -i.bak 's|-mbranch-protection=standard||g' BUILD.gn
 
 RUN ninja -C ${target} "v8_monolith" "d8"
 

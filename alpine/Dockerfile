@@ -53,8 +53,8 @@ RUN \
   ./tools/dev/v8gen.py x64.release -- \
     binutils_path=\"/usr/bin\" \
     target_os=\"linux\" \
-    target_cpu=\"x64\" \
-    v8_target_cpu=\"x64\" \
+    target_cpu=\"arm64\" \
+    v8_target_cpu=\"arm64\" \
     v8_enable_future=true \
     is_official_build=false \
     is_cfi=false \
