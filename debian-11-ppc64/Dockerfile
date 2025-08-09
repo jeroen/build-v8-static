@@ -1,17 +1,16 @@
-FROM rockylinux/rockylinux:8
+FROM debian:11
 
 ARG v8_version=11.9.169.7
 ENV version=$v8_version
 
-ENV target x86.static
+ENV target arm64.static
 ENV GYP_GENERATORS ninja
 ENV PATH="/depot_tools:${PATH}"
 ENV pkgdir /package
 
-RUN yum update -y && \
-	yum upgrade -y && \
-	yum install -y python38 xz git gcc-c++ bzip2 libatomic glib2-devel && \
-	ln -s /usr/bin/python3 /usr/bin/python
+RUN apt-get update -y && \
+	apt-get upgrade -y && \
+	apt-get install -y curl python3 xz-utils git g++ g++-powerpc64le-linux-gnu pkg-config libglib2.0-dev
 
 RUN git clone https://chromium.googlesource.com/chromium/tools/depot_tools
 
@@ -22,8 +21,8 @@ WORKDIR /v8
 RUN gclient sync -D --force --reset && \
 	gclient sync --revision ${version}
 
-# Workaround for GCC-8 bug
-RUN sed -i.bak 's|tuple()|tuple{}|g' src/compiler/turboshaft/operations.h
+# Bug in zlib for simd, was fixed somewhere in version 8.6 I think
+RUN sed -i.bak 's/use_arm_neon_optimizations = true/use_arm_neon_optimizations = false/g' third_party/zlib/BUILD.gn
 
 RUN gn gen ${target} -vv --fail-on-unused-args \
     --args='v8_monolithic=true \
@@ -35,11 +34,14 @@ RUN gn gen ${target} -vv --fail-on-unused-args \
             is_debug=false \
             is_official_build=false \
             treat_warnings_as_errors=false \
+            clang_use_chrome_plugins=false \
             v8_enable_i18n_support=false \
             v8_use_external_startup_data=false \
             use_custom_libcxx=false \
-            use_sysroot=false'
+            use_sysroot=false \
+            target_cpu="ppc64" v8_target_cpu="ppc64"'
 
+# NB: do not build tests on ARM
 RUN ninja -C ${target} "v8_monolith" "d8"
 
 RUN	install -d ${pkgdir}v8 && \

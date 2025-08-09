@@ -1,5 +1,5 @@
 # Adapted from: https://github.com/humanmade/alpine-v8
-ARG v8_version=10.8.168.25
+ARG v8_version=11.9.169.7
 ARG GN_COMMIT=cc28efe62ef0c2fb32455f414a29c4a55bb7fbc4
 
 # STEP 1
@@ -27,6 +27,7 @@ FROM debian:10 as source
 ARG v8_version
 RUN \
   set -x && \
+  sed -i.bak 's@http://deb.debian.org@http://archive.debian.org@g' /etc/apt/sources.list && \
   apt-get update && \
   apt-get install -y git curl python3 && \
   git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git /tmp/depot_tools && \

@@ -1,6 +1,6 @@
 FROM debian:bookworm
 
-ARG v8_version=10.2.154.23
+ARG v8_version=11.9.169.7
 ENV version=$v8_version
 
 ENV target x86.static

@@ -1,6 +1,6 @@
 FROM debian:11
 
-ARG v8_version=8.3.110.13
+ARG v8_version=11.9.169.7
 ENV version=$v8_version
 
 ENV target arm64.static
