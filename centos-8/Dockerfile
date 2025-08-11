@@ -3,10 +3,10 @@ FROM rockylinux/rockylinux:8
 ARG v8_version=11.9.169.7
 ENV version=$v8_version
 
-ENV target x86.static
-ENV GYP_GENERATORS ninja
+ENV target=x86.static
+ENV GYP_GENERATORS=ninja
 ENV PATH="/depot_tools:${PATH}"
-ENV pkgdir /package
+ENV pkgdir=/package
 
 RUN yum update -y && \
 	yum upgrade -y && \

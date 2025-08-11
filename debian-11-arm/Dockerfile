@@ -3,10 +3,10 @@ FROM debian:11
 ARG v8_version=11.9.169.7
 ENV version=$v8_version
 
-ENV target arm64.static
-ENV GYP_GENERATORS ninja
+ENV target=arm64.static
+ENV GYP_GENERATORS=ninja
 ENV PATH="/depot_tools:${PATH}"
-ENV pkgdir /package
+ENV pkgdir=/package
 
 RUN apt-get update -y && \
 	apt-get upgrade -y && \
