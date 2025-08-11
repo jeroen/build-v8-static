@@ -1,4 +1,4 @@
-FROM ppc64le/debian:11
+FROM ppc64le/debian:12
 
 ARG v8_version=11.9.169.7
 ENV version=$v8_version
@@ -8,7 +8,7 @@ ENV GYP_GENERATORS ninja
 ENV PATH="/depot_tools:${PATH}"
 ENV pkgdir /package
 
-RUN sed -i.bak 's@http://deb.debian.org@http://archive.debian.org@g' /etc/apt/sources.list
+##RUN sed -i.bak 's@http://deb.debian.org@http://archive.debian.org@g' /etc/apt/sources.list
 
 RUN apt-get update -y || true && \
 	apt-get upgrade -y || true && \
