@@ -1,4 +1,4 @@
-FROM debian:11
+FROM ppc64le/debian:12
 
 ARG v8_version=11.9.169.7
 ENV version=$v8_version
@@ -28,7 +28,6 @@ RUN gn gen ${target} -vv --fail-on-unused-args \
     --args='v8_monolithic=true \
             v8_static_library=true \
             v8_enable_sandbox=false \
-            v8_use_snapshot=false \
             is_clang=false \
             is_asan=false \
             use_gold=false \

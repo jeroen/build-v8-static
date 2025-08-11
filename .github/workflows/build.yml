@@ -13,16 +13,25 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        distro: [ 'centos-8', 'debian-11', 'debian-11-arm', 'debian-11-ppc64', 'debian-12-libcxx', 'alpine' ]
+        distro: [ 'debian-11-ppc64' ]
         version: [ '11.9.169.7' ]
 
     steps:
       - name: checkout
         uses: actions/checkout@v4
 
-      - name: build
-        run: |
-          docker build --build-arg v8_version=${{ matrix.version }} ${{ matrix.distro }} -t mybuild
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          platforms: linux/ppc64le
+          context: ${{ matrix.distro }}
+          push: false
 
       - name: copy
         run: |
