@@ -1,4 +1,4 @@
-FROM ppc64le/debian:12
+FROM ppc64le/debian:11
 
 ARG v8_version=11.9.169.7
 ENV version=$v8_version
@@ -8,8 +8,10 @@ ENV GYP_GENERATORS ninja
 ENV PATH="/depot_tools:${PATH}"
 ENV pkgdir /package
 
-RUN apt-get update -y && \
-	apt-get upgrade -y && \
+RUN sed -i.bak 's@http://deb.debian.org@http://archive.debian.org@g' /etc/apt/sources.list
+
+RUN apt-get update -y || true && \
+	apt-get upgrade -y || true && \
 	apt-get install -y curl python3 xz-utils git g++ g++-powerpc64le-linux-gnu pkg-config libglib2.0-dev
 
 RUN git clone https://chromium.googlesource.com/chromium/tools/depot_tools
