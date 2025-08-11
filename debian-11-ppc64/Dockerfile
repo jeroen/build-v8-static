@@ -3,7 +3,7 @@ FROM ppc64le/debian:12
 ARG v8_version=11.9.169.7
 ENV version=$v8_version
 
-ENV target arm64.static
+ENV target ppc64.static
 ENV GYP_GENERATORS ninja
 ENV PATH="/depot_tools:${PATH}"
 ENV pkgdir /package
@@ -17,6 +17,7 @@ RUN apt-get update -y || true && \
 RUN git clone https://chromium.googlesource.com/chromium/tools/depot_tools
 
 ENV VPYTHON_BYPASS="manually managed python not supported by chrome operations"
+ENV GCLIENT_PY3=1
 
 RUN yes | fetch v8
 
