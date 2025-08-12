@@ -17,7 +17,7 @@ RUN apt-get update -y && \
 
 RUN git clone https://chromium.googlesource.com/chromium/tools/depot_tools
 
-ENV VPYTHON_BYPASS="manually managed python not supported by chrome operations"
+#ENV VPYTHON_BYPASS="manually managed python not supported by chrome operations"
 ENV GCLIENT_PY3=1
 
 RUN yes | fetch --nohooks v8
@@ -25,7 +25,7 @@ RUN yes | fetch --nohooks v8
 WORKDIR /v8
 
 RUN gclient sync --nohooks -D --force --reset && \
-	gclient sync --revision ${version}
+	gclient sync --nohooks --revision ${version}
 
 RUN gn gen ${target} -vv --fail-on-unused-args \
     --args='v8_monolithic=true \
