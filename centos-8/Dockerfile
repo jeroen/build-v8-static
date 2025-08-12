@@ -23,7 +23,10 @@ RUN gclient sync --nohooks -D --force --reset && \
 	gclient sync --revision ${version}
 
 # Workaround for GCC-8 bug
-RUN sed -i.bak 's|tuple()|tuple{}|g' src/compiler/turboshaft/operations.h
+RUN \
+	sed -i.bak 's|tuple()|tuple{}|g' src/compiler/turboshaft/operations.h &&\
+	sed -i.bak 's|::v8::base::kUnreachableCodeMessage|"unreachable code"|g' src/base/logging.h
+
 
 RUN gn gen ${target} -vv --fail-on-unused-args \
     --args='v8_monolithic=true \
@@ -33,7 +36,7 @@ RUN gn gen ${target} -vv --fail-on-unused-args \
             is_asan=false \
             use_gold=false \
             is_debug=false \
-            is_official_build=true \
+            is_official_build=false \
             treat_warnings_as_errors=false \
             v8_enable_i18n_support=false \
             v8_use_external_startup_data=false \
