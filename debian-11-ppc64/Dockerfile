@@ -10,9 +10,10 @@ ENV pkgdir /package
 
 ##RUN sed -i.bak 's@http://deb.debian.org@http://archive.debian.org@g' /etc/apt/sources.list
 
-RUN apt-get update -y || true && \
-	apt-get upgrade -y || true && \
-	apt-get install -y curl python3 python3-httplib2 xz-utils git g++ g++-powerpc64le-linux-gnu pkg-config libglib2.0-dev
+RUN apt-get update -y && \
+	apt-get upgrade -y && \
+	apt-get install -y curl python3 python3-httplib2 xz-utils git g++ g++-powerpc64le-linux-gnu pkg-config libglib2.0-dev &&\
+	ln -s /usr/bin/python3 /usr/bin/python
 
 RUN git clone https://chromium.googlesource.com/chromium/tools/depot_tools
 
