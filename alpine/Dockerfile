@@ -47,10 +47,12 @@ RUN \
 FROM alpine:3.16 as v8
 COPY --from=source /tmp/v8 /tmp/v8
 COPY --from=gn-builder /usr/local/bin/gn /tmp/v8/buildtools/linux64/gn
+COPY 12.4-fixes.diff /tmp/12.4-fixes.diff
 RUN \
-  apk add --update --virtual .v8-build-dependencies curl g++ gcc glib-dev icu-dev libstdc++ linux-headers make ninja python3 tar xz && \
+  apk add --update --virtual .v8-build-dependencies curl g++ gcc glib-dev icu-dev libstdc++ linux-headers make ninja python3 tar xz patch && \
   ln -s /usr/bin/python3 /usr/bin/python && \
   cd /tmp/v8 && \
+  patch -p1 -i /tmp/12.4-fixes.diff && \
   ./tools/dev/v8gen.py x64.release -- \
     binutils_path=\"/usr/bin\" \
     target_os=\"linux\" \

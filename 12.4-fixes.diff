@@ -1,0 +1,94 @@
+diff --git a/BUILD.gn b/BUILD.gn
+index a25b6f2ac986..e2e0c16d9708 100644
+--- a/BUILD.gn
++++ b/BUILD.gn
+@@ -1716,6 +1716,10 @@ config("toolchain") {
+ 
+       # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=108517
+       "-Wno-nonnull",
++
++      # Disable dangling pointer warnings, which are often false positives when
++      # using scopes.
++      "-Wno-dangling-pointer",
+     ]
+   }
+ 
+diff --git a/src/base/logging.h b/src/base/logging.h
+index 0139cb10cee7..e68e79ebaac0 100644
+--- a/src/base/logging.h
++++ b/src/base/logging.h
+@@ -61,7 +61,7 @@ constexpr const char* kUnreachableCodeMessage = "unreachable code";
+ }  // namespace v8::base
+ 
+ #define UNIMPLEMENTED() FATAL(::v8::base::kUnimplementedCodeMessage)
+-#define UNREACHABLE() FATAL(::v8::base::kUnreachableCodeMessage)
++#define UNREACHABLE() abort()
+ // g++ versions <= 8 cannot use UNREACHABLE() in a constexpr function.
+ // TODO(miladfarca): Remove once all compilers handle this properly.
+ #if defined(__GNUC__) && !defined(__clang__) && (__GNUC__ <= 8)
+diff --git a/src/compiler/turboshaft/assembler.h b/src/compiler/turboshaft/assembler.h
+index e324c82b08cf..8493aca79ddc 100644
+--- a/src/compiler/turboshaft/assembler.h
++++ b/src/compiler/turboshaft/assembler.h
+@@ -6,6 +6,7 @@
+ #define V8_COMPILER_TURBOSHAFT_ASSEMBLER_H_
+ 
+ #include <cstring>
++#include <iomanip>
+ #include <iterator>
+ #include <limits>
+ #include <memory>
+diff --git a/src/compiler/wasm-compiler.cc b/src/compiler/wasm-compiler.cc
+index 16f1f1470b78..b4813b9ff759 100644
+--- a/src/compiler/wasm-compiler.cc
++++ b/src/compiler/wasm-compiler.cc
+@@ -8613,11 +8613,13 @@ wasm::WasmCompilationResult CompileWasmImportCallWrapper(
+                  '-');
+ 
+   auto compile_with_turboshaft = [&]() {
++    wasm::WrapperCompilationInfo ci;
++    ci.code_kind = CodeKind::WASM_TO_JS_FUNCTION;
++    ci.import_info.import_kind = kind;
++    ci.import_info.expected_arity = expected_arity;
++    ci.import_info.suspend = suspend;
+     return Pipeline::GenerateCodeForWasmNativeStubFromTurboshaft(
+-        env->module, sig,
+-        wasm::WrapperCompilationInfo{
+-            .code_kind = CodeKind::WASM_TO_JS_FUNCTION,
+-            .import_info = {kind, expected_arity, suspend}},
++        env->module, sig, ci,
+         func_name, WasmStubAssemblerOptions(), nullptr);
+   };
+   auto compile_with_turbofan = [&]() {
+@@ -8774,12 +8776,14 @@ MaybeHandle<Code> CompileWasmToJSWrapper(Isolate* isolate,
+       base::VectorOf(name_buffer.get(), kMaxNameLen) + kNamePrefixLen, sig);
+ 
+   auto compile_with_turboshaft = [&]() {
++    wasm::WrapperCompilationInfo ci;
++    ci.code_kind = CodeKind::WASM_TO_JS_FUNCTION;
++    ci.import_info.import_kind = kind;
++    ci.import_info.expected_arity = expected_arity;
++    ci.import_info.suspend = suspend;
+     std::unique_ptr<turboshaft::TurboshaftCompilationJob> job =
+         Pipeline::NewWasmTurboshaftWrapperCompilationJob(
+-            isolate, sig,
+-            wasm::WrapperCompilationInfo{
+-                .code_kind = CodeKind::WASM_TO_JS_FUNCTION,
+-                .import_info = {kind, expected_arity, suspend}},
++            isolate, sig, ci,
+             nullptr, std::move(name_buffer), WasmAssemblerOptions());
+ 
+     // Compile the wrapper
+diff --git a/src/wasm/wasm-disassembler.cc b/src/wasm/wasm-disassembler.cc
+index 6c5da414047f..1690ca026e75 100644
+--- a/src/wasm/wasm-disassembler.cc
++++ b/src/wasm/wasm-disassembler.cc
+@@ -4,6 +4,8 @@
+ 
+ #include "src/wasm/wasm-disassembler.h"
+ 
++#include <iomanip>
++
+ #include "src/debug/debug-interface.h"
+ #include "src/numbers/conversions.h"
+ #include "src/wasm/module-decoder-impl.h"

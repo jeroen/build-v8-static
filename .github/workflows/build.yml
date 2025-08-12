@@ -14,7 +14,7 @@ jobs:
       fail-fast: false
       matrix:
         distro: [ 'centos-8', 'debian-11', 'debian-11-arm', 'debian-12-libcxx', 'alpine' ]
-        version: [ '11.9.169.7' ]
+        version: [ '12.4.254.21' ]
 
     steps:
       - name: checkout
@@ -22,7 +22,7 @@ jobs:
 
       - name: build
         run: |
-          docker build --build-arg v8_version=${{ matrix.version }} ${{ matrix.distro }} -t mybuild
+          docker build --build-arg v8_version=${{ matrix.version }} -f ${{ matrix.distro }}/Dockerfile . -t mybuild
 
       - name: copy
         run: |
