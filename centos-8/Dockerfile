@@ -25,7 +25,7 @@ RUN gclient sync --nohooks -D --force --reset && \
 # Workaround for GCC-8 bug
 RUN \
 	sed -i.bak 's|tuple()|tuple{}|g' src/compiler/turboshaft/operations.h &&\
-	sed -i.bak 's|::v8::base::kUnreachableCodeMessage|"unreachable code"|g' src/base/logging.h
+	perl -pe 's/::v8::base::kUnreachableCodeMessage/"unreachable code"/g' src/base/logging.h
 
 
 RUN gn gen ${target} -vv --fail-on-unused-args \
@@ -43,7 +43,7 @@ RUN gn gen ${target} -vv --fail-on-unused-args \
             use_custom_libcxx=false \
             use_sysroot=false'
 
-RUN ninja -C ${target} "v8_monolith"
+RUN ninja -C ${target} "v8_monolith" "d8"
 
 RUN	install -d ${pkgdir}v8 && \
 	install -d ${pkgdir}/v8/lib && \
