@@ -14,7 +14,7 @@ jobs:
       fail-fast: false
       matrix:
         distro: [ 'debian-11-ppc64' ]
-        version: [ '11.9.169.7', '13.6.233.17' ]
+        version: [ '11.9.169.7', '12.4.254.21', '13.6.233.17' ]
 
     steps:
       - name: checkout
@@ -32,6 +32,8 @@ jobs:
           platforms: linux/ppc64le
           context: ${{ matrix.distro }}
           push: false
+          build-args: |
+            v8_version=${{ matrix.version }}
 
       - name: copy
         run: |
