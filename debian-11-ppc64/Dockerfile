@@ -25,7 +25,7 @@ RUN yes | fetch --nohooks v8
 WORKDIR /v8
 
 RUN gclient sync --nohooks -D --force --reset && \
-	gclient sync --nohooks --revision ${version}
+	gclient sync --revision ${version}
 
 RUN gn gen ${target} -vv --fail-on-unused-args \
     --args='v8_monolithic=true \
