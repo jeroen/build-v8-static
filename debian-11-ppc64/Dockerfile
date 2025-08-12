@@ -1,4 +1,4 @@
-FROM ppc64le/ubuntu:20.04
+FROM ppc64le/debian:11
 
 ARG v8_version=13.6.233.17
 ENV version=$v8_version
@@ -9,8 +9,10 @@ ENV PATH="/depot_tools:${PATH}"
 ENV pkgdir=/package
 ENV DEBIAN_FRONTEND=noninteractive
 
-RUN apt-get update -y && \
-	apt-get upgrade -y && \
+RUN sed -i.bak 's@http://deb.debian.org@http://archive.debian.org@g' /etc/apt/sources.list
+
+RUN apt-get update -y || true && \
+	apt-get upgrade -y || true && \
 	apt-get install -y curl python3 python3-httplib2 python3-httplib2 python3-six python3-distutils-extra xz-utils git g++ g++-powerpc64le-linux-gnu pkg-config libglib2.0-dev &&\
 	ln -s /usr/bin/python3 /usr/bin/python
 
