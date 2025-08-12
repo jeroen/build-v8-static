@@ -13,8 +13,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        distro: [ 'centos-8', 'debian-11', 'debian-11-arm', 'debian-12-libcxx', 'alpine' ]
-        version: [ '11.9.169.7', '12.4.254.21', '13.6.233.17' ]
+        distro: [ 'centos-8' ]
+        version: [ '12.3.219.18', '11.9.169.7', '12.4.254.21', '12.5.227.16', '12.6.228.49', '12.7.224.20' ]
 
     steps:
       - name: checkout
