@@ -19,15 +19,12 @@ RUN git clone https://chromium.googlesource.com/chromium/tools/depot_tools
 ENV VPYTHON_BYPASS="manually managed python not supported by chrome operations"
 ENV GCLIENT_PY3=1
 
-RUN yes | fetch v8
+RUN yes | fetch --nohooks v8
 
 WORKDIR /v8
 
-RUN gclient sync -D --force --reset && \
+RUN gclient sync --nohooks -D --force --reset && \
 	gclient sync --revision ${version}
-
-# Bug in zlib for simd, was fixed somewhere in version 8.6 I think
-RUN sed -i.bak 's/use_arm_neon_optimizations = true/use_arm_neon_optimizations = false/g' third_party/zlib/BUILD.gn
 
 RUN gn gen ${target} -vv --fail-on-unused-args \
     --args='v8_monolithic=true \
