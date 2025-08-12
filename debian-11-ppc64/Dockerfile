@@ -1,4 +1,4 @@
-FROM ppc64le/ubuntu:latest
+FROM ppc64le/ubuntu:25.04
 
 ARG v8_version=13.6.233.17
 ENV version=$v8_version
