@@ -1,12 +1,13 @@
-FROM ppc64le/ubuntu:25.04
+FROM ppc64le/ubuntu:20.04
 
 ARG v8_version=13.6.233.17
 ENV version=$v8_version
 
-ENV target ppc64.static
-ENV GYP_GENERATORS ninja
+ENV target=ppc64.static
+ENV GYP_GENERATORS=ninja
 ENV PATH="/depot_tools:${PATH}"
-ENV pkgdir /package
+ENV pkgdir=/package
+ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update -y && \
 	apt-get upgrade -y && \
