@@ -1,6 +1,6 @@
-FROM ppc64le/debian:12
+FROM ppc64le/ubuntu:latest
 
-ARG v8_version=11.9.169.7
+ARG v8_version=13.6.233.17
 ENV version=$v8_version
 
 ENV target ppc64.static
@@ -8,11 +8,9 @@ ENV GYP_GENERATORS ninja
 ENV PATH="/depot_tools:${PATH}"
 ENV pkgdir /package
 
-##RUN sed -i.bak 's@http://deb.debian.org@http://archive.debian.org@g' /etc/apt/sources.list
-
 RUN apt-get update -y && \
 	apt-get upgrade -y && \
-	apt-get install -y curl python3 python3-httplib2 xz-utils git g++ g++-powerpc64le-linux-gnu pkg-config libglib2.0-dev &&\
+	apt-get install -y curl python3 python3-httplib2 python3-distutils-extra xz-utils git g++ g++-powerpc64le-linux-gnu pkg-config libglib2.0-dev &&\
 	ln -s /usr/bin/python3 /usr/bin/python
 
 RUN git clone https://chromium.googlesource.com/chromium/tools/depot_tools
@@ -20,13 +18,11 @@ RUN git clone https://chromium.googlesource.com/chromium/tools/depot_tools
 ENV VPYTHON_BYPASS="manually managed python not supported by chrome operations"
 ENV GCLIENT_PY3=1
 
-RUN yes | fetch --nohooks v8
+RUN yes | fetch v8
 
 WORKDIR /v8
 
-RUN git branch build ${version} &&\
-	git checkout build &&\
-	gclient sync --nohooks -D --force --reset && \
+RUN gclient sync -D --force --reset && \
 	gclient sync --revision ${version}
 
 RUN gn gen ${target} -vv --fail-on-unused-args \

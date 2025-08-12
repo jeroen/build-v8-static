@@ -1,6 +1,6 @@
-FROM debian:11
+FROM debian:trixie
 
-ARG v8_version=11.9.169.7
+ARG v8_version=13.6.233.17
 ENV version=$v8_version
 
 ENV target arm64.static
