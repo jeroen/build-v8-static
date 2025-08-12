@@ -33,14 +33,14 @@ RUN gn gen ${target} -vv --fail-on-unused-args \
             is_asan=false \
             use_gold=false \
             is_debug=false \
-            is_official_build=false \
+            is_official_build=true \
             treat_warnings_as_errors=false \
             v8_enable_i18n_support=false \
             v8_use_external_startup_data=false \
             use_custom_libcxx=false \
             use_sysroot=false'
 
-RUN ninja -C ${target} "v8_monolith" "d8"
+RUN ninja -C ${target} "v8_monolith"
 
 RUN	install -d ${pkgdir}v8 && \
 	install -d ${pkgdir}/v8/lib && \
