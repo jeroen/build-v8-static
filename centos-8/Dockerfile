@@ -15,11 +15,11 @@ RUN yum update -y && \
 
 RUN git clone https://chromium.googlesource.com/chromium/tools/depot_tools
 
-RUN yes | fetch v8
+RUN yes | fetch --nohooks v8
 
 WORKDIR /v8
 
-RUN gclient sync -D --force --reset && \
+RUN gclient sync --nohooks -D --force --reset && \
 	gclient sync --revision ${version}
 
 # Workaround for GCC-8 bug

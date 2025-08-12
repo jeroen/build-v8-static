@@ -14,7 +14,7 @@ RUN apt-get update -y && \
 
 RUN git clone https://chromium.googlesource.com/chromium/tools/depot_tools
 
-RUN yes | fetch v8
+RUN yes | fetch --nohooks v8
 
 WORKDIR /v8
 

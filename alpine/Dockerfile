@@ -33,9 +33,9 @@ RUN \
   git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git /tmp/depot_tools && \
   PATH=$PATH:/tmp/depot_tools && \
   cd /tmp && \
-  fetch v8 && \
+  fetch --nohooks v8 && \
   cd /tmp/v8 && \
-  gclient sync -D --force --reset && \
+  gclient sync --nohooks -D --force --reset && \
   gclient sync --revision ${v8_version} && \
   apt-get remove --purge -y git curl python3 && \
   apt-get autoremove -y && \
