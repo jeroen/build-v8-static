@@ -14,7 +14,7 @@ RUN apt-get update -y && \
 
 RUN rm -f /usr/bin/clang++ && \
 	echo '#!/bin/sh' >> /usr/bin/clang++ && \
-	echo 'ARGS=$(echo "$@" | sed "s/-Wno-unqualified-std-cast-call//g")' >> /usr/bin/clang++ && \
+	echo 'ARGS=$(echo "$@" | sed "s/-Wno-unqualified-std-cast-call//g" | sed "s/-ffp-contract=off//g" | sed "s/-split-threshold-for-reg-with-hint=0//g")' >> /usr/bin/clang++ && \
 	echo '/usr/lib/llvm-14/bin/clang++ -stdlib=libc++ $ARGS' >> /usr/bin/clang++ && \
 	chmod +x /usr/bin/clang++
 
