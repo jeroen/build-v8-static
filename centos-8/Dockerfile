@@ -25,8 +25,7 @@ RUN gclient sync --nohooks -D --force --reset && \
 # Workaround for GCC-8 bug
 RUN \
 	sed -i.bak 's|tuple()|tuple{}|g' src/compiler/turboshaft/operations.h &&\
-	perl -pi -e 's/FATAL(::v8::base::kUnreachableCodeMessage)//g' src/base/logging.h
-
+	sed -i.bak 's|#define UNREACHABLE.*|#define UNREACHABLE() abort()|g' src/base/logging.h
 
 RUN gn gen ${target} -vv --fail-on-unused-args \
     --args='v8_monolithic=true \
