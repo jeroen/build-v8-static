@@ -10,7 +10,7 @@ ENV pkgdir=/package
 
 RUN yum update -y && \
 	yum upgrade -y && \
-	yum install -y python38 xz git gcc-c++ bzip2 libatomic glib2-devel && \
+	yum install -y python38 xz git gcc-c++ bzip2 libatomic glib2-devel patch curl && \
 	ln -s /usr/bin/python3 /usr/bin/python
 
 RUN git clone https://chromium.googlesource.com/chromium/tools/depot_tools
@@ -22,10 +22,11 @@ WORKDIR /v8
 RUN gclient sync --nohooks -D --force --reset && \
 	gclient sync --revision ${version}
 
-# Workaround for GCC-8 bug
+# Workaround for GCC-8 bugs
 RUN \
-	sed -i.bak 's|tuple()|tuple{}|g' src/compiler/turboshaft/operations.h &&\
-	sed -i.bak 's|#define UNREACHABLE.*|#define UNREACHABLE() abort()|g' src/base/logging.h
+	sed -i.bak 's|tuple()|tuple{}|g' src/compiler/turboshaft/operations.h && \
+	curl -OL https://patch-diff.githubusercontent.com/raw/v8/v8/pull/131.diff && \
+	patch -p1 -i 131.diff
 
 RUN gn gen ${target} -vv --fail-on-unused-args \
     --args='v8_monolithic=true \
