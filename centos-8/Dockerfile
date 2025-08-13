@@ -22,6 +22,11 @@ WORKDIR /v8
 RUN gclient sync --nohooks -D --force --reset && \
 	gclient sync --revision ${version}
 
+RUN curl -OL https://github.com/nodejs/node/archive/refs/tags/v22.18.0.tar.gz &&\
+        tar xf v22.18.0.tar.gz &&\
+        cp -Rf node-22.18.0/deps/v8/src . &&\
+        cp -Rf node-22.18.0/deps/v8/include .
+
 # Workaround for GCC-8 bugs
 COPY 12.4-fixes.diff /tmp/12.4-fixes.diff
 RUN \

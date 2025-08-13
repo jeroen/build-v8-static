@@ -13,7 +13,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        distro: [ 'debian-12-libcxx' ]
+        distro: [ 'centos-8' ]
         version: [ '12.4.254.21' ]
 
     steps:
