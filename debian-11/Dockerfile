@@ -1,27 +1,40 @@
 FROM debian:11
 
-ARG v8_version=11.9.169.7
-ENV version=$v8_version
+ARG NODE_VERSION=22.18.0
+ARG BUILD_VERSION=bca39698b291b392f0b4336857caf929c603ada3
+ARG GN_VERSION=59c4bb920542ee903ee1df39097ae024e2e8226f
 
-ENV target=x86.static
 ENV GYP_GENERATORS=ninja
-ENV PATH="/depot_tools:${PATH}"
 ENV pkgdir=/package
 
 RUN apt-get update -y && \
 	apt-get upgrade -y && \
-	apt-get install -y curl python3 xz-utils git g++ pkg-config libglib2.0-dev
+	apt-get install -y ninja-build clang curl python3 xz-utils git g++ pkg-config libglib2.0-dev
 
-RUN git clone https://chromium.googlesource.com/chromium/tools/depot_tools
+RUN \
+  git clone https://gn.googlesource.com/gn && \
+  cd gn && \
+  git checkout ${GN_VERSION} && \
+  python3 build/gen.py && \
+  ninja -C out && \
+  cp out/gn /usr/local/bin/gn
 
-RUN yes | fetch --nohooks v8
+RUN \
+  curl -sSL https://github.com/nodejs/node/archive/refs/tags/v${NODE_VERSION}.tar.gz -o node.tar.gz && \
+  mkdir -p /v8 &&\
+  tar xf node.tar.gz -C /v8 --strip-components=3 node-22.18.0/deps/v8
 
-WORKDIR /v8
+RUN \
+  git clone https://chromium.googlesource.com/chromium/src/build.git /build &&\
+  git -C /build checkout ${BUILD_VERSION} &&\
+  rm -Rf /v8/build &&\
+  ln -sf /build /v8/build
 
-RUN gclient sync --nohooks -D --force --reset && \
-	gclient sync --revision ${version}
+RUN \
+  echo "checkout_google_benchmark = false" > /v8/build/config/gclient_args.gni
 
-RUN gn gen ${target} -vv --fail-on-unused-args \
+RUN cd /v8 &&\
+  gn gen v8.static -vv --fail-on-unused-args \
     --args='v8_monolithic=true \
             v8_static_library=true \
             v8_enable_sandbox=false \
@@ -37,17 +50,18 @@ RUN gn gen ${target} -vv --fail-on-unused-args \
             use_custom_libcxx=false \
             use_sysroot=false'
 
-RUN ninja -C ${target} "v8_monolith" "d8"
+RUN cd /v8 && ninja -C v8.static -j2 "v8_monolith" "d8"
 
-RUN	install -d ${pkgdir}v8 && \
-	install -d ${pkgdir}/v8/lib && \
-	install -Dm755 ${target}/obj/libv8_monolith.a ${pkgdir}/v8/lib/libv8_monolith.a && \
-	install -d ${pkgdir}/v8/include && \
-	install -Dm644 include/*.h ${pkgdir}/v8/include && \
-	install -d ${pkgdir}/v8/include/cppgc && \
-	install -Dm644 include/cppgc/*.h ${pkgdir}/v8/include/cppgc && \
-	install -d ${pkgdir}/v8/include/libplatform && \
-	install -Dm644 include/libplatform/*.h ${pkgdir}/v8/include/libplatform && \
-	install -d ${pkgdir}/v8/lic/ && \
-	install -m644 LICENSE* ${pkgdir}/v8/lic/ && \
-	tar cfJ /v8-${version}-static.tar.xz -C ${pkgdir} v8
+RUN	cd /v8 &&\
+  install -d ${pkgdir}v8 && \
+  install -d ${pkgdir}/v8/lib && \
+  install -Dm755 v8.static/obj/libv8_monolith.a ${pkgdir}/v8/lib/libv8_monolith.a && \
+  install -d ${pkgdir}/v8/include && \
+  install -Dm644 include/*.h ${pkgdir}/v8/include && \
+  install -d ${pkgdir}/v8/include/cppgc && \
+  install -Dm644 include/cppgc/*.h ${pkgdir}/v8/include/cppgc && \
+  install -d ${pkgdir}/v8/include/libplatform && \
+  install -Dm644 include/libplatform/*.h ${pkgdir}/v8/include/libplatform && \
+  install -d ${pkgdir}/v8/lic/ && \
+  install -m644 LICENSE* ${pkgdir}/v8/lic/ && \
+  tar cfJ /v8-${v8_version}-static.tar.xz -C ${pkgdir} v8

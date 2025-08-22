@@ -5,16 +5,16 @@ name: Building V8
 
 jobs:
   build:
-    runs-on: ubuntu-latest
-    name: ${{ matrix.distro }} / v8-${{ matrix.version }}
+    runs-on: ubuntu-24.04${{matrix.arch=='arm64' && '-arm' || ''}}
+    name: ${{ matrix.distro }} / ${{ matrix.arch }}
 
 # V8 version from node-20: https://github.com/nodejs/node/blob/v20.x-staging-backport/deps/v8/include/v8-version.h
 
     strategy:
       fail-fast: false
       matrix:
-        distro: [ 'centos-8', 'debian-11', 'debian-11-arm', 'debian-12-libcxx', 'alpine' ]
-        version: [ '11.9.169.7' ]
+        distro: [ 'rocky-8', 'debian-11', 'debian-12-libcxx']
+        arch: [ 'amd64', 'arm64' ]
 
     steps:
       - name: checkout
@@ -22,20 +22,20 @@ jobs:
 
       - name: build
         run: |
-          docker build --build-arg v8_version=${{ matrix.version }} ${{ matrix.distro }} -t mybuild
+          docker build ${{ matrix.distro }} -t mybuild
 
       - name: copy
         run: |
           docker run -d --name myrun mybuild
           docker cp myrun:/v8-${{ matrix.version }}-static.tar.xz .
           docker stop myrun
-          mv v8-${{ matrix.version }}-static.tar.xz v8-${{ matrix.version }}-${{ matrix.distro }}.tar.xz
+          mv v8-${{ matrix.version }}-static.tar.xz v8-${{ matrix.version }}-${{ matrix.distro }}-${{ matrix.arch }}.tar.xz
 
       - name: store
         uses: actions/upload-artifact@v4
         with:
-          name: v8-${{ matrix.version }}-${{ matrix.distro }}
-          path: v8-${{ matrix.version }}-${{ matrix.distro }}.tar.xz
+          name: v8-${{ matrix.version }}-${{ matrix.distro }}-${{ matrix.arch }}
+          path: v8-${{ matrix.version }}-${{ matrix.distro }}-${{ matrix.arch }}.tar.xz
 
   release:
     runs-on: ubuntu-latest
