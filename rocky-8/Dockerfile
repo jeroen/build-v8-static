@@ -1,15 +1,18 @@
-FROM debian:12
+FROM rockylinux/rockylinux:8
 
 ARG NODE_VERSION=22.18.0
-ARG BUILD_VERSION=e14e0cc3b60c6ba8901741da3f9c18b7fa983880
+ARG BUILD_VERSION=bca39698b291b392f0b4336857caf929c603ada3
 ARG GN_VERSION=59c4bb920542ee903ee1df39097ae024e2e8226f
 
 ENV GYP_GENERATORS=ninja
 ENV pkgdir=/package
 
-RUN apt-get update -y && \
-	apt-get upgrade -y && \
-	apt-get install -y ninja-build clang curl python3 git pkg-config libglib2.0-dev clang xz-utils libc++-dev libc++abi-dev llvm lld
+RUN \
+	dnf upgrade -y && \
+	dnf install -y dnf-plugins-core epel-release && \
+	dnf config-manager --set-enabled powertools &&\
+	dnf install -y python38 xz git clang gcc-c++ bzip2 libatomic glib2-devel ninja-build patch && \
+	ln -s /usr/bin/python3 /usr/bin/python
 
 RUN \
   git clone https://gn.googlesource.com/gn && \
@@ -18,13 +21,6 @@ RUN \
   python3 build/gen.py && \
   ninja -C out && \
   cp out/gn /usr/local/bin/gn
-
-RUN rm -f /usr/bin/clang++ && \
-	echo '#!/bin/sh' >> /usr/bin/clang++ && \
-	echo 'ARGS=$(echo "$@" | sed "s/-Wno-deprecated-builtins//g")' >> /usr/bin/clang++ && \
-	echo '/usr/lib/llvm-14/bin/clang++ -stdlib=libc++ $ARGS' >> /usr/bin/clang++ && \
-	chmod +x /usr/bin/clang++
-
 
 RUN \
   curl -sSL https://github.com/nodejs/node/archive/refs/tags/v${NODE_VERSION}.tar.gz -o node.tar.gz && \
@@ -37,6 +33,10 @@ RUN \
   rm -Rf /v8/build &&\
   ln -sf /build /v8/build
 
+# Workaround for GCC-8 bugs
+COPY gcc-8.diff /tmp/gcc-8.diff
+RUN patch -p0 -i /tmp/gcc-8.diff
+
 RUN \
   echo "checkout_google_benchmark = false" > /v8/build/config/gclient_args.gni
 
@@ -45,9 +45,7 @@ RUN cd /v8 &&\
     --args='v8_monolithic=true \
             v8_static_library=true \
             v8_enable_sandbox=false \
-            v8_enable_fuzztest=false \
-            is_clang=true \
-            clang_base_path="/usr" \
+            is_clang=false \
             is_asan=false \
             use_gold=false \
             is_debug=false \

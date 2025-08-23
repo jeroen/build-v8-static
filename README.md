@@ -1,15 +1,17 @@
 # Building V8
 
-Some dockerfiles for building libv8 on various platforms. Based on Jan Marvin's [v8-static](https://github.com/JanMarvin/v8-static) script for building V8 on Arch.
+Some dockerfiles for building libv8 on various platforms.
 
-Run `docker build . -t myv8` in the source dir. If all goes well, the final image has `/v8-{version}.tar.xz` in the root. Use `docker run myv8` and then `docker cp` to copy it to your system.
+The releases section in this repository has binaries as built by the GitHub actions CI.
 
-## Important notes
+## How to use
 
-Because depot_tools changes all the time, this will probably only work for recent versions of V8. To build an older V8 version, you may have to add a step to checkout an older version of depot_tools. Suitable dependency versions are storted in the [DEPS](https://github.com/v8/v8/blob/master/DEPS) file in the V8 source tree for the version you are building.
+Run `docker build . -t myv8` in any of the source dirs. If all goes well, the final image has `/v8-{version}.tar.xz` in the root. Use `docker run myv8` and then `docker cp` to copy it to your system. Also see the [CI workflow](https://github.com/jeroen/build-v8-static/blob/HEAD/.github/workflows/build.yml) how to do this.
 
-V8 pulls in a custom clang++ compiler at build time, so I think the version of g++ on your system doesn't matter. But it should still be using your system libcxx, which is what is important to use the library in your applications.
+## Some notes
+
+Nowadays we use the V8 source code bundled with nodejs, which is more portable and already includes dependencies. However if you want to build from the upstream V8 git repository instead, have a look at the [11.9-final](https://github.com/jeroen/build-v8-static/tree/11.9-final) tag for examples how to do this.
 
 This is a minimal build without internationalization which results in a single "monolith" static library. Tweak the `gn gen` command to enable other features.
 
-Building V8 requires a lot of memory, if you get random failures, docker may be running out of memory or disk space.
+Building V8 requires a lot of memory, if you get random failures, docker may be running out of memory or disk space. In this case try chaning the build command to `ninja -j1`.
