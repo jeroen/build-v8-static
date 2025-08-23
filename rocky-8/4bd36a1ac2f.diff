@@ -24,10 +24,10 @@ index f608d678505e..882be746310d 100644
    }
  
    void reportCallWithArgument(ConsoleAPIType type, const String16& message) {
--    std::vector<v8::Local<v8::Value>> arguments(1,
--                                                toV8String(m_isolate, message));
+-    auto arguments =
+-        v8::to_array<v8::Local<v8::Value>>({toV8String(m_isolate, message)});
 +    auto arguments =
-+        v8::to_array<v8::Local<v8::Value>>({toV8String(m_isolate, message)});
++        v8::to_array<v8::Local<v8::String>>({toV8String(m_isolate, message)});
      reportCall(type, arguments);
    }
  
@@ -39,10 +39,10 @@ index f608d678505e..882be746310d 100644
                                                                   id)) {
        return;
      }
--    std::vector<v8::Local<v8::Value>> arguments(1,
--                                                toV8String(m_isolate, message));
+-    auto arguments =
+-        v8::to_array<v8::Local<v8::Value>>({toV8String(m_isolate, message)});
 +    auto arguments =
-+        v8::to_array<v8::Local<v8::Value>>({toV8String(m_isolate, message)});
++        v8::to_array<v8::Local<v8::String>>({toV8String(m_isolate, message)});
      reportCall(ConsoleAPIType::kWarning, arguments);
    }
  

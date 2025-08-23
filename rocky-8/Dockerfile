@@ -39,7 +39,7 @@ RUN patch -p0 -i /tmp/gcc-8.diff
 
 # Revert https://github.com/v8/v8/commit/4bd36a1ac2f
 COPY 4bd36a1ac2f.diff /tmp/4bd36a1ac2f.diff
-RUN patch -d /v8 -Rp1 /tmp/4bd36a1ac2f.diff
+RUN patch -d /v8 -p1 /tmp/4bd36a1ac2f.diff 
 
 RUN \
   echo "checkout_google_benchmark = false" > /v8/build/config/gclient_args.gni
