@@ -27,7 +27,7 @@ index f608d678505e..882be746310d 100644
 -    auto arguments =
 -        v8::to_array<v8::Local<v8::Value>>({toV8String(m_isolate, message)});
 +    auto arguments =
-+        v8::to_array<v8::Local<v8::String>>({toV8String(m_isolate, message)});
++        v8::to_array<v8::Local<v8::Value>>({toV8String(m_isolate, message)->Value()});
      reportCall(type, arguments);
    }
  
@@ -42,7 +42,7 @@ index f608d678505e..882be746310d 100644
 -    auto arguments =
 -        v8::to_array<v8::Local<v8::Value>>({toV8String(m_isolate, message)});
 +    auto arguments =
-+        v8::to_array<v8::Local<v8::String>>({toV8String(m_isolate, message)});
++        v8::to_array<v8::Local<v8::Value>>({toV8String(m_isolate, message)->Value()});
      reportCall(ConsoleAPIType::kWarning, arguments);
    }
  
