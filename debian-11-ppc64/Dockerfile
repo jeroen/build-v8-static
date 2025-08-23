@@ -1,15 +1,21 @@
-FROM debian:12
+# This container only works under linux/ppc64le emulation
+# docker build --platform linux/ppc64le . --progress=plain
+# This is too slow for CI, have to build locally.
+
+FROM ppc64le/debian:11
 
 ARG NODE_VERSION=22.18.0
+ARG BUILD_VERSION=bca39698b291b392f0b4336857caf929c603ada3
 ARG GN_VERSION=59c4bb920542ee903ee1df39097ae024e2e8226f
-ARG BUILD_VERSION=2098c5df51111bd58b43830781bca684de90171f
 
 ENV GYP_GENERATORS=ninja
 ENV pkgdir=/package
 
-RUN apt-get update -y && \
-	apt-get upgrade -y && \
-	apt-get install -y ninja-build clang curl python3 git pkg-config libglib2.0-dev clang xz-utils libc++-dev libc++abi-dev llvm lld
+RUN \
+  sed -i.bak 's@http://deb.debian.org@http://archive.debian.org@g' /etc/apt/sources.list && \
+  apt-get update || true && \
+  apt-get upgrade -y && \
+  apt-get install -y ninja-build clang curl python3 xz-utils git g++ pkg-config libglib2.0-dev
 
 RUN \
   git clone https://gn.googlesource.com/gn && \
@@ -18,11 +24,6 @@ RUN \
   python3 build/gen.py && \
   ninja -C out && \
   cp out/gn /usr/local/bin/gn
-
-RUN rm -f /usr/bin/clang++ && \
-	echo '#!/bin/sh' >> /usr/bin/clang++ && \
-	echo '/usr/lib/llvm-14/bin/clang++ -stdlib=libc++ "$@"' >> /usr/bin/clang++ && \
-	chmod +x /usr/bin/clang++
 
 RUN \
   curl -sSL https://github.com/nodejs/node/archive/refs/tags/v${NODE_VERSION}.tar.gz -o node.tar.gz && \
@@ -43,9 +44,7 @@ RUN cd /v8 &&\
     --args='v8_monolithic=true \
             v8_static_library=true \
             v8_enable_sandbox=false \
-            v8_enable_fuzztest=false \
-            is_clang=true \
-            clang_base_path="/usr" \
+            is_clang=false \
             is_asan=false \
             use_gold=false \
             is_debug=false \
@@ -59,7 +58,7 @@ RUN cd /v8 &&\
 
 RUN cd /v8 && ninja -C v8.static -j2 "v8_monolith" "d8"
 
-RUN	cd /v8 &&\
+RUN cd /v8 &&\
   install -d ${pkgdir}v8 && \
   install -d ${pkgdir}/v8/lib && \
   install -Dm755 v8.static/obj/libv8_monolith.a ${pkgdir}/v8/lib/libv8_monolith.a && \

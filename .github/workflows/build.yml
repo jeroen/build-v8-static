@@ -15,6 +15,9 @@ jobs:
       matrix:
         distro: [ 'rocky-8', 'debian-11', 'debian-12-libcxx']
         arch: [ 'amd64', 'arm64' ]
+        exclude:
+          - distro: rocky-8
+            arch: arm64
 
     steps:
       - name: checkout
