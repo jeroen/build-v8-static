@@ -1,99 +1,3 @@
-diff --git a/src/inspector/custom-preview.cc b/src/inspector/custom-preview.cc
-index 4e9c4a42ebeb..fd85866783c1 100644
---- a/src/inspector/custom-preview.cc
-+++ b/src/inspector/custom-preview.cc
-@@ -35,15 +35,15 @@ void reportError(v8::Local<v8::Context> context, const v8::TryCatch& tryCatch) {
-   v8::Local<v8::String> prefix =
-       toV8String(isolate, "Custom Formatter Failed: ");
-   message = v8::String::Concat(isolate, prefix, message);
--  std::vector<v8::Local<v8::Value>> arguments;
-+  v8::LocalVector<v8::Value> arguments(isolate);
-   arguments.push_back(message);
-   V8ConsoleMessageStorage* storage =
-       inspector->ensureConsoleMessageStorage(groupId);
-   if (!storage) return;
-   storage->addMessage(V8ConsoleMessage::createForConsoleAPI(
-       context, contextId, groupId, inspector,
--      inspector->client()->currentTimeMS(), ConsoleAPIType::kError, arguments,
--      String16(), nullptr));
-+      inspector->client()->currentTimeMS(), ConsoleAPIType::kError,
-+      {arguments.begin(), arguments.end()}, String16(), nullptr));
- }
- 
- void reportError(v8::Local<v8::Context> context, const v8::TryCatch& tryCatch,
-diff --git a/src/inspector/v8-console-message.cc b/src/inspector/v8-console-message.cc
-index c63e523aab91..8b678c00f1d8 100644
---- a/src/inspector/v8-console-message.cc
-+++ b/src/inspector/v8-console-message.cc
-@@ -87,6 +87,7 @@ class V8ValueStringBuilder {
-   explicit V8ValueStringBuilder(v8::Local<v8::Context> context)
-       : m_arrayLimit(maxArrayItemsLimit),
-         m_isolate(context->GetIsolate()),
-+        m_visitedArrays(context->GetIsolate()),
-         m_tryCatch(context->GetIsolate()),
-         m_context(context) {}
- 
-@@ -183,7 +184,7 @@ class V8ValueStringBuilder {
-   uint32_t m_arrayLimit;
-   v8::Isolate* m_isolate;
-   String16Builder m_builder;
--  std::vector<v8::Local<v8::Array>> m_visitedArrays;
-+  v8::LocalVector<v8::Array> m_visitedArrays;
-   v8::TryCatch m_tryCatch;
-   v8::Local<v8::Context> m_context;
- };
-@@ -425,7 +426,7 @@ ConsoleAPIType V8ConsoleMessage::type() const { return m_type; }
- std::unique_ptr<V8ConsoleMessage> V8ConsoleMessage::createForConsoleAPI(
-     v8::Local<v8::Context> v8Context, int contextId, int groupId,
-     V8InspectorImpl* inspector, double timestamp, ConsoleAPIType type,
--    const std::vector<v8::Local<v8::Value>>& arguments,
-+    v8::MemorySpan<const v8::Local<v8::Value>> arguments,
-     const String16& consoleContext,
-     std::unique_ptr<V8StackTraceImpl> stackTrace) {
-   v8::Isolate* isolate = v8Context->GetIsolate();
-@@ -441,18 +442,21 @@ std::unique_ptr<V8ConsoleMessage> V8ConsoleMessage::createForConsoleAPI(
-   message->m_consoleContext = consoleContext;
-   message->m_type = type;
-   message->m_contextId = contextId;
--  for (size_t i = 0; i < arguments.size(); ++i) {
-+  for (v8::Local<v8::Value> arg : arguments) {
-     std::unique_ptr<v8::Global<v8::Value>> argument(
--        new v8::Global<v8::Value>(isolate, arguments.at(i)));
-+        new v8::Global<v8::Value>(isolate, arg));
-     argument->AnnotateStrongRetainer(kGlobalConsoleMessageHandleLabel);
-     message->m_arguments.push_back(std::move(argument));
--    message->m_v8Size +=
--        v8::debug::EstimatedValueSize(isolate, arguments.at(i));
-+    message->m_v8Size += v8::debug::EstimatedValueSize(isolate, arg);
-   }
--  for (size_t i = 0, num_args = arguments.size(); i < num_args; ++i) {
--    if (i) message->m_message += String16(" ");
--    message->m_message +=
--        V8ValueStringBuilder::toString(arguments[i], v8Context);
-+  bool sep = false;
-+  for (v8::Local<v8::Value> arg : arguments) {
-+    if (sep) {
-+      message->m_message += String16(" ");
-+    } else {
-+      sep = true;
-+    }
-+    message->m_message += V8ValueStringBuilder::toString(arg, v8Context);
-   }
- 
-   v8::Isolate::MessageErrorLevel clientLevel = v8::Isolate::kMessageInfo;
-diff --git a/src/inspector/v8-console-message.h b/src/inspector/v8-console-message.h
-index cd960cf79787..7c0804da45cb 100644
---- a/src/inspector/v8-console-message.h
-+++ b/src/inspector/v8-console-message.h
-@@ -51,7 +51,7 @@ class V8ConsoleMessage {
-   static std::unique_ptr<V8ConsoleMessage> createForConsoleAPI(
-       v8::Local<v8::Context> v8Context, int contextId, int groupId,
-       V8InspectorImpl* inspector, double timestamp, ConsoleAPIType,
--      const std::vector<v8::Local<v8::Value>>& arguments,
-+      v8::MemorySpan<const v8::Local<v8::Value>> arguments,
-       const String16& consoleContext, std::unique_ptr<V8StackTraceImpl>);
- 
-   static std::unique_ptr<V8ConsoleMessage> createForException(
 diff --git a/src/inspector/v8-console.cc b/src/inspector/v8-console.cc
 index f608d678505e..882be746310d 100644
 --- a/src/inspector/v8-console.cc
@@ -102,33 +6,21 @@ index f608d678505e..882be746310d 100644
  
    void reportCall(ConsoleAPIType type) {
      if (!m_info.Length()) return;
--    std::vector<v8::Local<v8::Value>> arguments;
-+    v8::LocalVector<v8::Value> arguments(m_isolate);
      arguments.reserve(m_info.Length());
      for (int i = 0; i < m_info.Length(); ++i) arguments.push_back(m_info[i]);
--    reportCall(type, arguments);
-+    reportCall(type, {arguments.begin(), arguments.end()});
    }
  
    void reportCallWithDefaultArgument(ConsoleAPIType type,
                                       const String16& message) {
--    std::vector<v8::Local<v8::Value>> arguments;
-+    v8::LocalVector<v8::Value> arguments(m_isolate);
      arguments.reserve(m_info.Length());
      for (int i = 0; i < m_info.Length(); ++i) arguments.push_back(m_info[i]);
      if (!m_info.Length()) arguments.push_back(toV8String(m_isolate, message));
--    reportCall(type, arguments);
-+    reportCall(type, {arguments.begin(), arguments.end()});
    }
  
    void reportCallAndReplaceFirstArgument(ConsoleAPIType type,
                                           const String16& message) {
--    std::vector<v8::Local<v8::Value>> arguments;
-+    v8::LocalVector<v8::Value> arguments(m_isolate);
      arguments.push_back(toV8String(m_isolate, message));
      for (int i = 1; i < m_info.Length(); ++i) arguments.push_back(m_info[i]);
--    reportCall(type, arguments);
-+    reportCall(type, {arguments.begin(), arguments.end()});
    }
  
    void reportCallWithArgument(ConsoleAPIType type, const String16& message) {
@@ -140,8 +32,6 @@ index f608d678505e..882be746310d 100644
    }
  
    void reportCall(ConsoleAPIType type,
--                  const std::vector<v8::Local<v8::Value>>& arguments) {
-+                  v8::MemorySpan<const v8::Local<v8::Value>> arguments) {
      if (!m_groupId) return;
      std::unique_ptr<V8ConsoleMessage> message =
          V8ConsoleMessage::createForConsoleAPI(
@@ -155,22 +45,4 @@ index f608d678505e..882be746310d 100644
 +        v8::to_array<v8::Local<v8::Value>>({toV8String(m_isolate, message)});
      reportCall(ConsoleAPIType::kWarning, arguments);
    }
- 
-@@ -355,12 +355,13 @@ void V8Console::Assert(const v8::debug::ConsoleCallArguments& info,
-   ConsoleHelper helper(info, consoleContext, m_inspector);
-   DCHECK(!helper.firstArgToBoolean(false));
- 
--  std::vector<v8::Local<v8::Value>> arguments;
-+  v8::Isolate* isolate = m_inspector->isolate();
-+  v8::LocalVector<v8::Value> arguments(isolate);
-   for (int i = 1; i < info.Length(); ++i) arguments.push_back(info[i]);
-   if (info.Length() < 2)
--    arguments.push_back(
--        toV8String(m_inspector->isolate(), String16("console.assert")));
--  helper.reportCall(ConsoleAPIType::kAssert, arguments);
-+    arguments.push_back(toV8String(isolate, String16("console.assert")));
-+  helper.reportCall(ConsoleAPIType::kAssert,
-+                    {arguments.begin(), arguments.end()});
-   m_inspector->debugger()->breakProgramOnAssert(helper.groupId());
- }
  
