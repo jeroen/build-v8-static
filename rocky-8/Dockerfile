@@ -40,12 +40,6 @@ RUN patch -p0 -i /tmp/gcc-8.diff
 RUN \
   echo "checkout_google_benchmark = false" > /v8/build/config/gclient_args.gni
 
-RUN \
-  cd /usr/bin &&\
-  ln -s g++ $(uname -m)-linux-gnu-g++ &&\
-  ln -s gcc $(uname -m)-linux-gnu-gcc &&\
-  ln -s ar $(uname -m)-linux-gnu-ar
-
 RUN cd /v8 &&\
   gn gen v8.static -vv --fail-on-unused-args \
     --args='v8_monolithic=true \
@@ -61,7 +55,6 @@ RUN cd /v8 &&\
             v8_enable_i18n_support=false \
             v8_use_external_startup_data=false \
             use_custom_libcxx=false \
-            arm_control_flow_integrity="none" \
             use_sysroot=false'
 
 RUN cd /v8 && ninja -C v8.static -j2 "v8_monolith" "d8"
