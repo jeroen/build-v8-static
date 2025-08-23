@@ -1,8 +1,8 @@
 FROM debian:12
 
 ARG NODE_VERSION=22.18.0
+ARG BUILD_VERSION=e14e0cc3b60c6ba8901741da3f9c18b7fa983880
 ARG GN_VERSION=59c4bb920542ee903ee1df39097ae024e2e8226f
-ARG BUILD_VERSION=2098c5df51111bd58b43830781bca684de90171f
 
 ENV GYP_GENERATORS=ninja
 ENV pkgdir=/package
@@ -21,8 +21,10 @@ RUN \
 
 RUN rm -f /usr/bin/clang++ && \
 	echo '#!/bin/sh' >> /usr/bin/clang++ && \
-	echo '/usr/lib/llvm-14/bin/clang++ -stdlib=libc++ "$@"' >> /usr/bin/clang++ && \
+	echo 'ARGS=$(echo "$@" | sed "s/-Wno-unqualified-std-cast-call//g")' >> /usr/bin/clang++ && \
+	echo '/usr/lib/llvm-14/bin/clang++ -stdlib=libc++ $ARGS' >> /usr/bin/clang++ && \
 	chmod +x /usr/bin/clang++
+
 
 RUN \
   curl -sSL https://github.com/nodejs/node/archive/refs/tags/v${NODE_VERSION}.tar.gz -o node.tar.gz && \
