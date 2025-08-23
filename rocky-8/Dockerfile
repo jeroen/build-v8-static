@@ -35,10 +35,7 @@ RUN \
 
 # Workaround for GCC-8 bugs
 COPY gcc-8.diff /tmp/gcc-8.diff
-RUN \
-  patch -p1 -i /tmp/gcc-8.diff 
-
-#  sed -i.bak 's|tuple()|tuple{}|g' src/compiler/turboshaft/operations.h && \
+RUN patch -p0 -i /tmp/gcc-8.diff
 
 RUN \
   echo "checkout_google_benchmark = false" > /v8/build/config/gclient_args.gni
