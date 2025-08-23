@@ -1,8 +1,7 @@
-diff --git a/src/base/logging.h b/src/base/logging.h
-index 0139cb10cee7..e68e79ebaac0 100644
---- a/src/base/logging.h
-+++ b/src/base/logging.h
-@@ -61,7 +61,7 @@ constexpr const char* kUnreachableCodeMessage = "unreachable code";
+diff -aurp v8-orig/src/base/logging.h v8/src/base/logging.h
+--- v8-orig/src/base/logging.h	2025-08-23 10:37:17
++++ v8/src/base/logging.h	2025-08-23 10:38:18
+@@ -61,7 +61,7 @@ constexpr const char* kUnreachableCodeMessage = "unrea
  }  // namespace v8::base
  
  #define UNIMPLEMENTED() FATAL(::v8::base::kUnimplementedCodeMessage)
@@ -11,4 +10,24 @@ index 0139cb10cee7..e68e79ebaac0 100644
  // g++ versions <= 8 cannot use UNREACHABLE() in a constexpr function.
  // TODO(miladfarca): Remove once all compilers handle this properly.
  #if defined(__GNUC__) && !defined(__clang__) && (__GNUC__ <= 8)
+diff -aurp v8-orig/src/compiler/turboshaft/operations.h v8/src/compiler/turboshaft/operations.h
+--- v8-orig/src/compiler/turboshaft/operations.h	2025-08-23 10:37:16
++++ v8/src/compiler/turboshaft/operations.h	2025-08-23 10:37:29
+@@ -6564,7 +6564,7 @@ struct AnyConvertExternOp : FixedArityOperationT<1, An
  
+   void Validate(const Graph& graph) const {}
+ 
+-  auto options() const { return std::tuple(); }
++  auto options() const { return std::tuple{}; }
+ };
+ 
+ struct ExternConvertAnyOp : FixedArityOperationT<1, ExternConvertAnyOp> {
+@@ -6585,7 +6585,7 @@ struct ExternConvertAnyOp : FixedArityOperationT<1, Ex
+ 
+   void Validate(const Graph& graph) const {}
+ 
+-  auto options() const { return std::tuple(); }
++  auto options() const { return std::tuple{}; }
+ };
+ 
+ struct StructGetOp : FixedArityOperationT<1, StructGetOp> {
