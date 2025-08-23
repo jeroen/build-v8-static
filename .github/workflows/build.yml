@@ -37,8 +37,8 @@ jobs:
       - name: store
         uses: actions/upload-artifact@v4
         with:
-          name: v8-${{ matrix.version }}-${{ matrix.distro }}-${{ matrix.arch }}
-          path: v8-${{ matrix.version }}-${{ matrix.distro }}-${{ matrix.arch }}.tar.xz
+          name: v8-${{ matrix.distro }}-${{ matrix.arch }}
+          path: v8-${{ matrix.distro }}-${{ matrix.arch }}.tar.xz
 
   release:
     runs-on: ubuntu-latest
