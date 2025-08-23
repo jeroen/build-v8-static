@@ -11,7 +11,7 @@ RUN \
 	dnf upgrade -y && \
 	dnf install -y dnf-plugins-core epel-release && \
 	dnf config-manager --set-enabled powertools &&\
-	dnf install -y python38 xz git clang gcc-c++ bzip2 libatomic glib2-devel ninja-build && \
+	dnf install -y python38 xz git clang gcc-c++ bzip2 libatomic glib2-devel ninja-build patch && \
 	ln -s /usr/bin/python3 /usr/bin/python
 
 RUN \
