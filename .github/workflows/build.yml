@@ -13,7 +13,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        distro: [ 'rocky-8', 'debian-11', 'debian-12-libcxx']
+        distro: [ 'alpine', 'rocky-8', 'debian-11', 'debian-12-libcxx']
         arch: [ 'amd64', 'arm64' ]
         exclude:
           - distro: rocky-8

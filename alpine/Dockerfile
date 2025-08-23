@@ -1,91 +1,68 @@
-# Adapted from: https://github.com/humanmade/alpine-v8
-ARG v8_version=11.9.169.7
-ARG GN_COMMIT=cc28efe62ef0c2fb32455f414a29c4a55bb7fbc4
+FROM alpine:3.16 
 
-# STEP 1
-# Build GN for alpine
-FROM alpine:3.16 as gn-builder
-ARG GN_COMMIT
+ARG NODE_VERSION=22.18.0
+ARG BUILD_VERSION=bca39698b291b392f0b4336857caf929c603ada3
+ARG GN_VERSION=59c4bb920542ee903ee1df39097ae024e2e8226f
+
+ENV GYP_GENERATORS=ninja
+ENV pkgdir=/package
+
 RUN \
-  apk add --update --virtual .gn-build-dependencies alpine-sdk binutils-gold clang curl git llvm13 ninja python3 tar xz && \
-  PATH=$PATH:/usr/lib/llvm9/bin  && \
-  cp -f /usr/bin/ld.gold /usr/bin/ld  && \
-  git clone https://gn.googlesource.com/gn /tmp/gn && \
-  git -C /tmp/gn checkout ${GN_COMMIT} && \
-  cd /tmp/gn && \
+  apk add --update git alpine-sdk binutils-gold clang curl git llvm13 ninja python3 tar xz glib-dev icu-dev libstdc++ linux-headers make &&\
+  ln -s /usr/bin/python3 /usr/bin/python
+
+RUN \
+  git clone https://gn.googlesource.com/gn && \
+  cd gn && \
+  git checkout ${GN_VERSION} && \
   python3 build/gen.py && \
   ninja -C out && \
-  cp -f /tmp/gn/out/gn /usr/local/bin/gn && \
-  apk del .gn-build-dependencies && \
-  rm -rf /tmp/* /var/tmp/* /var/cache/apk/*
+  cp out/gn /usr/local/bin/gn
 
-
-# STEP 2
-# Use depot_tools to fetch the V8 source and dependencies
-# This requires glibc so we use debian tools
-FROM debian:10 as source
-ARG v8_version
 RUN \
-  set -x && \
-  sed -i.bak 's@http://deb.debian.org@http://archive.debian.org@g' /etc/apt/sources.list && \
-  apt-get update && \
-  apt-get install -y git curl python3 && \
-  git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git /tmp/depot_tools && \
-  PATH=$PATH:/tmp/depot_tools && \
-  cd /tmp && \
-  fetch --nohooks v8 && \
-  cd /tmp/v8 && \
-  gclient sync --nohooks -D --force --reset && \
-  gclient sync --revision ${v8_version} && \
-  apt-get remove --purge -y git curl python3 && \
-  apt-get autoremove -y && \
-  rm -rf /var/lib/apt/lists/*
+  curl -sSL https://github.com/nodejs/node/archive/refs/tags/v${NODE_VERSION}.tar.gz -o node.tar.gz && \
+  mkdir -p /v8 &&\
+  tar xf node.tar.gz -C /v8 --strip-components=3 node-22.18.0/deps/v8
 
-
-# STEP 3
-# Build V8 for alpine
-FROM alpine:3.16 as v8
-COPY --from=source /tmp/v8 /tmp/v8
-COPY --from=gn-builder /usr/local/bin/gn /tmp/v8/buildtools/linux64/gn
 RUN \
-  apk add --update --virtual .v8-build-dependencies curl g++ gcc glib-dev icu-dev libstdc++ linux-headers make ninja python3 tar xz && \
-  ln -s /usr/bin/python3 /usr/bin/python && \
-  cd /tmp/v8 && \
-  ./tools/dev/v8gen.py x64.release -- \
-    binutils_path=\"/usr/bin\" \
-    target_os=\"linux\" \
-    target_cpu=\"x64\" \
-    v8_target_cpu=\"x64\" \
-    v8_enable_future=true \
-    is_official_build=false \
-    is_cfi=false \
-    is_clang=false \
-    is_debug=false \
-    use_custom_libcxx=false \
-    use_sysroot=false \
-    use_gold=false \
-    use_allocator_shim=false \
-    treat_warnings_as_errors=false \
-    symbol_level=0 \
-    strip_debug_info=true \
-    v8_monolithic=true \
-    v8_use_external_startup_data=false \
-    v8_enable_i18n_support=false \
-    v8_enable_gdbjit=false \
-    v8_static_library=true \
-    v8_experimental_extra_library_files=[] \
-    v8_extra_library_files=[] && \
-  ninja -C out.gn/x64.release -j $(getconf _NPROCESSORS_ONLN) "v8_monolith" "d8" && \
-  find /tmp/v8/out.gn/x64.release -name '*.a'
+  git clone https://chromium.googlesource.com/chromium/src/build.git /build &&\
+  git -C /build checkout ${BUILD_VERSION} &&\
+  rm -Rf /v8/build &&\
+  ln -sf /build /v8/build
 
-# STEP 4
-# Create package archive
-ARG v8_version
-ENV pkgdir /package
-RUN cd /tmp/v8 && \
+RUN \
+  echo "checkout_google_benchmark = false" > /v8/build/config/gclient_args.gni
+
+RUN \
+  cd /usr/bin &&\
+  ln -s g++ $(uname -m)-linux-gnu-g++ &&\
+  ln -s gcc $(uname -m)-linux-gnu-gcc &&\
+  ln -s ar $(uname -m)-linux-gnu-ar
+
+
+RUN cd /v8 &&\
+  gn gen v8.static -vv --fail-on-unused-args \
+    --args='v8_monolithic=true \
+            v8_static_library=true \
+            v8_enable_sandbox=false \
+            is_clang=false \
+            is_asan=false \
+            use_gold=false \
+            is_debug=false \
+            is_official_build=false \
+            treat_warnings_as_errors=false \
+            clang_use_chrome_plugins=false \
+            v8_enable_i18n_support=false \
+            v8_use_external_startup_data=false \
+            use_custom_libcxx=false \
+            use_sysroot=false'
+
+RUN cd /v8 && ninja -C v8.static -j2 "v8_monolith" "d8"
+
+RUN cd /v8 &&\
   install -d ${pkgdir}v8 && \
   install -d ${pkgdir}/v8/lib && \
-  install -Dm755 out.gn/x64.release/obj/libv8_monolith.a ${pkgdir}/v8/lib/libv8_monolith.a && \
+  install -Dm755 v8.static/obj/libv8_monolith.a ${pkgdir}/v8/lib/libv8_monolith.a && \
   install -d ${pkgdir}/v8/include && \
   install -Dm644 include/*.h ${pkgdir}/v8/include && \
   install -d ${pkgdir}/v8/include/cppgc && \
