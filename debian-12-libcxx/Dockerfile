@@ -21,7 +21,7 @@ RUN \
 
 RUN rm -f /usr/bin/clang++ && \
 	echo '#!/bin/sh' >> /usr/bin/clang++ && \
-	echo 'ARGS=$(echo "$@" | sed "s/-Wno-unqualified-std-cast-call//g")' >> /usr/bin/clang++ && \
+	echo 'ARGS=$(echo "$@" | sed "s/-Wno-deprecated-builtins//g")' >> /usr/bin/clang++ && \
 	echo '/usr/lib/llvm-14/bin/clang++ -stdlib=libc++ $ARGS' >> /usr/bin/clang++ && \
 	chmod +x /usr/bin/clang++
 
