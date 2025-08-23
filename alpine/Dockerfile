@@ -39,6 +39,9 @@ RUN \
   ln -s gcc $(uname -m)-linux-gnu-gcc &&\
   ln -s ar $(uname -m)-linux-gnu-ar
 
+# Patch from https://github.com/nodejs/node/issues/55596
+COPY 55596.diff /tmp/55596.diff
+RUN patch -p2 -i /tmp/55596.diff
 
 RUN cd /v8 &&\
   gn gen v8.static -vv --fail-on-unused-args \
